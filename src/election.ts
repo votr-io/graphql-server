@@ -6,7 +6,9 @@ import * as tokens from './tokens';
 
 export const schema = gql`
   extend type Query {
-    listElections(): [Election!]!
+    getElection(input: GetElectionRequest): GetElectionResponse
+    listElections(): ListElectionsResponse
+
   }
   extend type Mutation {
     createElection(input: CreateElectionRequest): CreateElectionResponse!
@@ -18,6 +20,17 @@ export const schema = gql`
 
     #addRegistrations (this should probably be allowed in both PENDING and ACTIVE)
     #removeRegistrations (this should probably be allowed only in PENDING)
+  }
+
+  input GetElectionRequest {
+    id: ID!
+  }
+  type GetElectionResponse {
+    election: Election
+  }
+
+  type ListElectionsResponse {
+    elections: [Election!]!
   }
 
   input CreateElectionRequest {

@@ -4,6 +4,7 @@ const users: [User?] = [];
 const elections: [Election?] = [];
 
 export interface Election {
+  id: string;
   name: string;
   createdBy: String;
 }
