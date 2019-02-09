@@ -57,7 +57,6 @@ async function newUser(
       await deleteMe.call(clientWithToken, {});
 
       const res = await me.call(clientWithToken, {});
-      console.log(res);
       expect(res.errors.length).toBeGreaterThan(0);
     },
   };
