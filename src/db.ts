@@ -16,6 +16,7 @@ export interface User {
 export interface Db {
   createUser: (input: { username: string; password: string }) => User;
   getUser: (input: { username: string }) => User | null;
+  deleteUser: (username: string) => void;
 
   createElection: (input: { name: string; username: string }) => Election;
   listElections: () => [Election?];
@@ -28,6 +29,9 @@ export const db: Db = {
   },
   getUser: ({ username }) => {
     return _.find(users, user => user.username === username) || null;
+  },
+  deleteUser: username => {
+    _.remove(users, user => user.username == username);
   },
 
   createElection: ({ name, username }) => {

@@ -8,8 +8,9 @@ export const schema = gql`
     me: User
   }
   extend type Mutation {
-    login(input: LoginRequest): LoginResponse
-    register(input: RegisterRequest): RegisterResponse
+    login(input: LoginRequest): LoginResponse!
+    register(input: RegisterRequest): RegisterResponse!
+    deleteMe: Boolean!
   }
 
   input LoginRequest {
@@ -35,8 +36,13 @@ export const schema = gql`
 
 export const resolvers: IResolvers<any, Context> = {
   Query: {
-    me: (_, args: {}, ctx: Context) => {
-      return tokens.validate(ctx.token);
+    me: (_, args: {}, { token, db }: Context) => {
+      const { username } = tokens.validate(token);
+      const user = db.getUser({ username });
+      if (user == null) {
+        throw new Error('user not found');
+      }
+      return user;
     },
   },
   Mutation: {
@@ -66,6 +72,15 @@ export const resolvers: IResolvers<any, Context> = {
       const { username, password } = args.input;
       db.createUser({ username, password });
       return { token: tokens.sign({ username }) };
+    },
+    deleteMe: (
+      _,
+      args: { input: { username: string; password: string } },
+      { db, token }: Context
+    ) => {
+      const { username } = tokens.validate(token);
+      db.deleteUser(username);
+      return true;
     },
   },
 };
