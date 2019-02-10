@@ -3,10 +3,35 @@ import * as _ from 'lodash';
 const users: [User?] = [];
 const elections: [Election?] = [];
 
+export type ElectionStatus = 'PENDING' | 'ACTIVE' | 'TALLYING' | 'COMPLETE';
+export interface CandidateVotes {
+  candidateId: string;
+  votes: number;
+}
+
 export interface Election {
   id: string;
   name: string;
-  createdBy: String;
+  createdBy: string;
+  dateUpdated: string;
+  candidates: [
+    {
+      id: string;
+      name: string;
+      description: string;
+    }
+  ];
+  status: ElectionStatus;
+  statusTransitions: [{ on: string; status: ElectionStatus }];
+  results?: {
+    winnder: string;
+    replay: [
+      {
+        candidateTotals: [CandidateVotes];
+        redistribution: [CandidateVotes];
+      }
+    ];
+  };
 }
 
 export interface User {
@@ -16,11 +41,13 @@ export interface User {
 
 export interface Db {
   createUser: (input: { username: string; password: string }) => User;
-  getUser: (input: { username: string }) => User | null;
-  deleteUser: (username: string) => void;
+  getUsers: (input: { ids: [string] }) => [User];
+  deleteUsers: (input: { ids: [string] }) => void;
 
-  createElection: (input: { name: string; username: string }) => Election;
+  createElection: (input: { election: Election }) => Election;
   listElections: () => [Election?];
+  getElections: (intput: { ids: [string] }) => [Election];
+  deleteElections: (input: { ids: [string] }) => void;
 }
 
 export const db: Db = {
@@ -28,18 +55,26 @@ export const db: Db = {
     users.push(input);
     return input;
   },
-  getUser: ({ username }) => {
-    return _.find(users, user => user.username === username) || null;
+  getUsers: ({ ids }) => {
+    throw new Error('not imp');
+    // return _.find(users, user => user.username === username) || null;
   },
-  deleteUser: username => {
-    _.remove(users, user => user.username == username);
+  deleteUsers: ({ ids }) => {
+    throw new Error('not imp');
+    // _.remove(users, user => user.username == username);
   },
 
-  createElection: ({ name, username }) => {
-    elections.push({ name, createdBy: username });
-    return { name, createdBy: username };
+  createElection: ({ election }) => {
+    elections.push(election);
+    return election;
   },
   listElections: () => {
     return elections;
+  },
+  getElections: ({ ids }) => {
+    throw new Error('not imp');
+  },
+  deleteElections: ({ ids }) => {
+    throw new Error('not imp');
   },
 };

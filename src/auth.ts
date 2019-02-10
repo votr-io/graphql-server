@@ -38,7 +38,7 @@ export const resolvers: IResolvers<any, Context> = {
   Query: {
     me: (_, args: {}, { token, db }: Context) => {
       const { username } = tokens.validate(token);
-      const user = db.getUser({ username });
+      const user = db.getUsers({ ids: [username] });
       if (user == null) {
         throw new Error('user not found');
       }
@@ -53,7 +53,7 @@ export const resolvers: IResolvers<any, Context> = {
     ) => {
       const { username, password } = args.input;
 
-      const user = db.getUser({ username });
+      const [user] = db.getUsers({ ids: [username] });
       if (user == null) {
         throw new Error('user not found');
       }
@@ -79,7 +79,7 @@ export const resolvers: IResolvers<any, Context> = {
       { db, token }: Context
     ) => {
       const { username } = tokens.validate(token);
-      db.deleteUser(username);
+      db.deleteUsers({ ids: [username] });
       return true;
     },
   },

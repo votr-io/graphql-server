@@ -1,4 +1,4 @@
-import { Election } from './db';
+import { Election, ElectionStatus } from './db';
 import { gql } from 'apollo-server-core';
 import { IResolvers } from 'apollo-server';
 import { Context } from './context';
@@ -7,8 +7,7 @@ import * as tokens from './tokens';
 export const schema = gql`
   extend type Query {
     getElection(input: GetElectionRequest): GetElectionResponse
-    listElections(): ListElectionsResponse
-
+    listElections: ListElectionsResponse
   }
   extend type Mutation {
     createElection(input: CreateElectionRequest): CreateElectionResponse!
@@ -45,19 +44,17 @@ export const schema = gql`
     election: Election!
   }
 
-
   """
   updateElection is used to modify an election when it is in the PENDING status.
   Once an election has entered any other status, it's configuration is frozen.
   TODO: add properties here like public/private, manual/scheduled start/end dates
-  """  
+  """
   input UpdateElectionRequest {
     name: String
   }
-  input UpdateElectionResponse {
+  type UpdateElectionResponse {
     election: Election!
   }
-
 
   input AddCandidatesRequest {
     electionId: ID!
@@ -69,7 +66,7 @@ export const schema = gql`
 
   input RemoveCandidatesRequest {
     electionId: ID!
-    candidateIds [ID!]!
+    candidateIds: [ID!]!
   }
   type RemoveCandidatesResponse {
     election: Election!
@@ -79,9 +76,8 @@ export const schema = gql`
     electionIds: [ID!]!
   }
 
-
   """
-  Moves the election into a status.  
+  Moves the election into a status.
   Request will fail if the status is an invalid transition.
   """
   input SetStatusRequest {
@@ -106,9 +102,9 @@ export const schema = gql`
   """
   Represents the dateTime an election moved into a specific status.
   """
-  enum ElectionStatusTransition {
+  type ElectionStatusTransition {
     on: String!
-    status: Status!
+    status: ElectionStatus!
   }
 
   """
@@ -154,7 +150,7 @@ export const schema = gql`
   }
 
   """
-  Votes associated with a candidate.  
+  Votes associated with a candidate.
   Can be used for:
     - number of votes a candidate recieved in a round
     - number of votes being redistributed to a candidate in the event there's more than one round
