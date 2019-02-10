@@ -30,6 +30,7 @@ export const schema = gql`
   }
 
   type User {
+    id: String!
     username: String!
   }
 `;
@@ -37,8 +38,8 @@ export const schema = gql`
 export const resolvers: IResolvers<any, Context> = {
   Query: {
     me: (_, args: {}, { token, db }: Context) => {
-      const { username } = tokens.validate(token);
-      const user = db.getUsers({ ids: [username] });
+      const { id } = tokens.validate(token);
+      const [user] = db.getUsers({ ids: [id] });
       if (user == null) {
         throw new Error('user not found');
       }
@@ -62,7 +63,7 @@ export const resolvers: IResolvers<any, Context> = {
         throw new Error('bad password');
       }
 
-      return { token: tokens.sign({ username }) };
+      return { token: tokens.sign(user) };
     },
     register: (
       _,
@@ -70,16 +71,16 @@ export const resolvers: IResolvers<any, Context> = {
       { db }: Context
     ) => {
       const { username, password } = args.input;
-      db.createUser({ username, password });
-      return { token: tokens.sign({ username }) };
+      const user = db.createUser({ username, password });
+      return { token: tokens.sign(user) };
     },
     deleteMe: (
       _,
       args: { input: { username: string; password: string } },
       { db, token }: Context
     ) => {
-      const { username } = tokens.validate(token);
-      db.deleteUsers({ ids: [username] });
+      const { id } = tokens.validate(token);
+      db.deleteUsers({ ids: [id] });
       return true;
     },
   },

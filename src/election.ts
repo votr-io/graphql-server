@@ -1,12 +1,13 @@
 import { Election, ElectionStatus } from './db';
 import { gql } from 'apollo-server-core';
 import { IResolvers } from 'apollo-server';
-import { Context } from './context';
+import { Context, context } from './context';
 import * as tokens from './tokens';
+const uuidv4 = require('uuid/v4');
 
 export const schema = gql`
   extend type Query {
-    getElection(input: GetElectionRequest): GetElectionResponse
+    getElections(input: GetElectionsRequest): GetElectionsResponse
     listElections: ListElectionsResponse
   }
   extend type Mutation {
@@ -21,11 +22,11 @@ export const schema = gql`
     #removeRegistrations (this should probably be allowed only in PENDING)
   }
 
-  input GetElectionRequest {
-    id: ID!
+  input GetElectionsRequest {
+    ids: [ID!]!
   }
-  type GetElectionResponse {
-    election: Election
+  type GetElectionsResponse {
+    elections: [Election!]!
   }
 
   type ListElectionsResponse {
@@ -38,7 +39,7 @@ export const schema = gql`
   }
   input CreateCandidateInput {
     name: String!
-    description: String!
+    description: String
   }
   type CreateElectionResponse {
     election: Election!
@@ -73,7 +74,7 @@ export const schema = gql`
   }
 
   input DeleteElectionsRequest {
-    electionIds: [ID!]!
+    ids: [ID!]!
   }
 
   """
@@ -94,9 +95,9 @@ export const schema = gql`
   """
   enum ElectionStatus {
     PENDING
-    ACTIVE
+    OPEN
     TALLYING
-    COMPLETE
+    CLOSED
   }
 
   """
@@ -116,7 +117,7 @@ export const schema = gql`
     createdBy: User!
     dateUpdated: String!
     candidates: [Candidate!]!
-    statuses: ElectionStatus!
+    status: ElectionStatus!
     statusTransitions: [ElectionStatusTransition!]!
     results: Results
   }
@@ -165,17 +166,72 @@ export const schema = gql`
 
 export const resolvers: IResolvers<any, Context> = {
   Query: {
-    listElections: (_, args: {}, ctx: Context) => {
-      return;
+    getElections: (_, args: { input: { ids: string[] } }, { token, db }: Context) => {
+      const { ids } = args.input;
+      /*
+      TODO: Authorization.  only return if:
+         - this election is owned by the user making the request
+         - this election is private, but the user making the request is registered
+         - this election is public
+      */
+
+      const elections = db.getElections({ ids });
+      return { elections };
+    },
+    listElections: (_, args: {}, { token, db }: Context) => {
+      const { id } = tokens.validate(token);
+      return db.listElections({ createdBy: id });
+    },
+  },
+  Election: {
+    createdBy: async (election: Election, _, { db }: Context) => {
+      return db.getUsers({ ids: [election.createdBy] })[0];
     },
   },
   Mutation: {
-    login: (_, args: { input: { username: string; password: string } }) => {
-      const { username, password } = args.input;
-      if (password !== 'boggle') {
-        throw new Error('bad password');
-      }
-      return { token: tokens.sign({ username }) };
+    createElection: (
+      _,
+      args: { input: { name: string; candidates: CreateCandidateInput[] } },
+      { token, db }: Context
+    ) => {
+      console.log('create election request received');
+      const { id } = tokens.validate(token);
+      const { name, candidates } = args.input;
+      const now = new Date().toISOString();
+      const election = db.createElection({
+        election: {
+          id: uuidv4(),
+          name,
+          createdBy: id,
+          dateUpdated: now,
+          candidates: candidates.map(candidate => ({ id: uuidv4(), ...candidate })),
+          status: 'PENDING',
+          statusTransitions: [
+            {
+              on: now,
+              status: 'PENDING',
+            },
+          ],
+        },
+      });
+      return { election };
+    },
+    deleteElections: (_, args: { input: { ids: string[] } }, { token, db }: Context) => {
+      const { id } = tokens.validate(token);
+      const { ids } = args.input;
+
+      const elections = db.getElections({ ids });
+      const electionsAuthorizedForDeleteion = elections
+        .filter(({ createdBy }) => createdBy === id)
+        .map(({ id }) => id);
+
+      db.deleteElections({ ids: electionsAuthorizedForDeleteion });
+      return true;
     },
   },
 };
+
+interface CreateCandidateInput {
+  name: string;
+  description: string;
+}

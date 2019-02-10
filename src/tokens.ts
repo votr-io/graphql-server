@@ -2,6 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import { ENV } from './env';
 
 export interface Claims {
+  id: string;
   username: string;
 }
 export function sign(claims: Claims): string {

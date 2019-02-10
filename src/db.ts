@@ -1,9 +1,10 @@
 import * as _ from 'lodash';
+const uuidv4 = require('uuid/v4');
 
 const users: [User?] = [];
 const elections: [Election?] = [];
 
-export type ElectionStatus = 'PENDING' | 'ACTIVE' | 'TALLYING' | 'COMPLETE';
+export type ElectionStatus = 'PENDING' | 'OPEN' | 'TALLYING' | 'CLOSED';
 export interface CandidateVotes {
   candidateId: string;
   votes: number;
@@ -14,67 +15,66 @@ export interface Election {
   name: string;
   createdBy: string;
   dateUpdated: string;
-  candidates: [
-    {
-      id: string;
-      name: string;
-      description: string;
-    }
-  ];
+  candidates: {
+    id: string;
+    name: string;
+    description: string;
+  }[];
   status: ElectionStatus;
-  statusTransitions: [{ on: string; status: ElectionStatus }];
+  statusTransitions: { on: string; status: ElectionStatus }[];
   results?: {
     winnder: string;
-    replay: [
-      {
-        candidateTotals: [CandidateVotes];
-        redistribution: [CandidateVotes];
-      }
-    ];
+    replay: {
+      candidateTotals: CandidateVotes[];
+      redistribution: CandidateVotes[];
+    }[];
   };
 }
 
 export interface User {
+  id: string;
   username: string;
   password: string;
 }
 
+type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+
 export interface Db {
   createUser: (input: { username: string; password: string }) => User;
-  getUsers: (input: { ids: [string] }) => [User];
-  deleteUsers: (input: { ids: [string] }) => void;
+  getUsers: (input: { ids: string[] }) => User[];
+  deleteUsers: (input: { ids: string[] }) => void;
 
   createElection: (input: { election: Election }) => Election;
-  listElections: () => [Election?];
-  getElections: (intput: { ids: [string] }) => [Election];
-  deleteElections: (input: { ids: [string] }) => void;
+  listElections: (input: { createdBy?: string }) => Election[];
+  getElections: (intput: { ids: string[] }) => Election[];
+  deleteElections: (input: { ids: string[] }) => void;
 }
 
 export const db: Db = {
   createUser: input => {
-    users.push(input);
-    return input;
+    const user = { ...input, id: uuidv4() };
+    users.push(user);
+    return user;
   },
   getUsers: ({ ids }) => {
-    throw new Error('not imp');
-    // return _.find(users, user => user.username === username) || null;
+    return _.filter(users, ({ id }) => _.includes(ids, id));
   },
   deleteUsers: ({ ids }) => {
-    throw new Error('not imp');
-    // _.remove(users, user => user.username == username);
+    _.remove(users, ({ id }) => _.includes(ids, id));
   },
 
   createElection: ({ election }) => {
+    console.log('create election in db hit');
     elections.push(election);
     return election;
   },
-  listElections: () => {
-    return elections;
+  listElections: ({ createdBy }) => {
+    return _.filter(elections, election => election.createdBy === createdBy);
   },
   getElections: ({ ids }) => {
-    throw new Error('not imp');
+    return _.filter(elections, ({ id }) => _.includes(ids, id));
   },
   deleteElections: ({ ids }) => {
-    throw new Error('not imp');
+    _.remove(elections, ({ id }) => _.includes(ids, id));
   },
 };

@@ -39,7 +39,7 @@ const deleteMe = MutationFactory<deleteMe>(
   `
 );
 
-async function newUser(
+export async function newUser(
   username: string
 ): Promise<{ token: string; client: ApolloClient<any>; cleanUp: () => Promise<void> }> {
   const {
