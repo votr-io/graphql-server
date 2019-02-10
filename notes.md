@@ -8,3 +8,7 @@
 Private election considerations:
 
 - think about what can happen with deregistering people that still posses the registration link? do we care?
+
+API design:
+
+- check in with Erin and make sure all of these wrapped response types aren't going to be too much of a pain in the ass to work against. They way they are now is really optimizing for being able to make non-breaking changes to the API in the future, at the expese of having the data you want to get at in the response being nested down an extra level.
