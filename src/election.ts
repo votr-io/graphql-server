@@ -36,6 +36,7 @@ export const schema = gql`
   input CreateElectionRequest {
     name: String!
     candidates: [CreateCandidateInput!]!
+    email: String
   }
   input CreateCandidateInput {
     name: String!
@@ -114,6 +115,7 @@ export const schema = gql`
   type Election {
     id: ID!
     name: String!
+    description: String!
     createdBy: User!
     dateUpdated: String!
     candidates: [Candidate!]!
