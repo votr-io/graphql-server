@@ -33,7 +33,8 @@ export interface CandidateVotes {
 
 export const createElection = async (input: { election: Election }) => {
   const [columns, values] = columnsAndValues(input.election);
-  return await db.none(`INSERT INTO elections VALUES(${columns.join(', ')});`, values);
+  const query = `INSERT INTO elections VALUES(${columns.join(', ')});`;
+  return await db.none(query, values);
 };
 
 export const getElections = async (input: { ids: String[] }): Promise<Election[]> => {
@@ -41,15 +42,12 @@ export const getElections = async (input: { ids: String[] }): Promise<Election[]
   return await db.any('SELECT * FROM elections WHERE id IN ($1:csv);', ids);
 };
 
-function columnsAndValues(o: Object): [string[], any[]] {
+function columnsAndValues(o: Object): [string[], Object] {
   const keys = Object.keys(o);
-  const values = keys.map(key => {
-    if (isObject(o[key])) return JSON.stringify(o[key]);
-    return o[key];
-  });
+  const values = keys.reduce((acc, key) => {
+    const value = o[key];
+    acc[key] = isObject(value) ? JSON.stringify(value) : value;
+    return acc;
+  }, {});
   return [keys.map(key => `$(${key})`), values];
-}
-
-function toSqlIndexArgs(list: any[]): string {
-  return list.map((_, i) => `$${i + 1}`).join(',');
 }
