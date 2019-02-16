@@ -1,8 +1,0 @@
-{
-  "local": {
-    "driver": "pg",
-    "user": "postgres",
-    "password": "passw0rd",
-    "host": "localhost"
-  }
-}
