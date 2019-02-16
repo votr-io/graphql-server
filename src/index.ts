@@ -1,11 +1,36 @@
 import { createUser, getUsers, deleteUsers } from './db/user';
-import { createElection, Election, getElections } from './db/election';
+import {
+  createElection,
+  Election,
+  getElections,
+  deleteCandidates,
+  createCandidates,
+} from './db/election';
 import * as express from 'express';
 import { ApolloServer, gql } from 'apollo-server-express';
 import * as cors from 'cors';
 import { ENV } from './env';
 import { typeDefs, resolvers } from './schemaAndResolvers';
 import { context } from './context';
+
+// const electionId = 'efe98d33-1515-4832-a514-c07a8928f8e5';
+// const candidateIds = [
+//   '7e9f753b-728d-4e14-b73b-07ecf74b4573',
+//   '6ce7d68f-75ce-4720-8ad4-4647f8917e57',
+//   '6ce7d68f-75ce-4720-8ad4-4647f8917e51',
+//   '6ce7d68f-75ce-4720-8ad4-4647f8917e52',
+//   '6ce7d68f-75ce-4720-8ad4-4647f8917e54',
+// ];
+// deleteCandidates({ electionId, candidateIds })
+//   .then(() => getElections({ ids: [electionId] }))
+//   .then(election => {
+//     console.log(election[0]);
+//     return createCandidates({
+//       electionId,
+//       candidates: candidateIds.map((id, i) => ({ id, name: `candidate${i}` })),
+//     });
+//   })
+//   .then(console.log);
 
 // const uuidv4 = require('uuid/v4');
 // let userId = uuidv4();
