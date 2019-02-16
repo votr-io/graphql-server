@@ -1,0 +1,41 @@
+mutation CreateElection(
+  $name: String!
+  $description: String!
+  $candidates: [CreateCandidateInput!]!
+  $email: String
+) {
+  createElection(
+    input: {
+      name: $name
+      description: $description
+      candidates: $candidates
+      email: $email
+    }
+  ) {
+    election {
+      id
+      name
+      description
+      createdBy {
+        id
+        email
+      }
+      candidates {
+        id
+        name
+        description
+      }
+      status
+      statusTransitions {
+        on
+        status
+      }
+      results {
+        winner {
+          id
+          name
+        }
+      }
+    }
+  }
+}

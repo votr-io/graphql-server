@@ -7,39 +7,39 @@ import { ENV } from './env';
 import { typeDefs, resolvers } from './schemaAndResolvers';
 import { context } from './context';
 
-const uuidv4 = require('uuid/v4');
-let userId = uuidv4();
-createUser({ user: { id: userId, email: `${userId}@fake.com` } }).then(() => {
-  getUsers({ ids: [userId] }).then(console.log);
-});
+// const uuidv4 = require('uuid/v4');
+// let userId = uuidv4();
+// createUser({ user: { id: userId, email: `${userId}@fake.com` } }).then(() => {
+//   getUsers({ ids: [userId] }).then(console.log);
+// });
 
-userId = uuidv4();
-const electionId = uuidv4();
-createUser({ user: { id: userId, email: `${userId}@fake.com` } })
-  .then(() => {
-    const now = new Date().toISOString();
-    const election: Election = {
-      id: electionId,
-      name: 'sure is an election',
-      description: 'asfda',
-      created_by: userId,
-      date_updated: now,
-      candidates: [{ id: uuidv4(), name: 'test', description: 'asdfas' }],
-      status: 'PENDING',
-      status_transitions: [
-        {
-          on: now,
-          status: 'PENDING',
-        },
-      ],
-    };
-    return createElection({ election });
-  })
-  .then(() => {
-    getElections({ ids: [electionId] }).then(([election]) => {
-      console.log(election);
-    });
-  });
+// userId = uuidv4();
+// const electionId = uuidv4();
+// createUser({ user: { id: userId, email: `${userId}@fake.com` } })
+//   .then(() => {
+//     const now = new Date().toISOString();
+//     const election: Election = {
+//       id: electionId,
+//       name: 'sure is an election',
+//       description: 'asfda',
+//       created_by: userId,
+//       date_updated: now,
+//       candidates: [{ id: uuidv4(), name: 'test', description: 'asdfas' }],
+//       status: 'PENDING',
+//       status_transitions: [
+//         {
+//           on: now,
+//           status: 'PENDING',
+//         },
+//       ],
+//     };
+//     return createElection({ election });
+//   })
+//   .then(() => {
+//     getElections({ ids: [electionId] }).then(([election]) => {
+//       console.log(election);
+//     });
+//   });
 
 // getUsers({ ids: ['b7f90237-d4e7-4338-a245-d3ad8be88649'] }).then(users => {
 //   deleteUsers({ ids: users.map(({ id }) => id) });

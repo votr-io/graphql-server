@@ -6,15 +6,19 @@
   "scripts": {
     "download:schema": "apollo schema:download --endpoint http://localhost:5000/graphql ./src/generated/schema.json",
     "generate:client": "apollo client:codegen --endpoint http://localhost:5000/graphql --target=typescript --addTypename --outputFlat ./src/tests/generated/ --includes=src/tests/**/*.test.ts",
+    "generate:serviceFactory": "apollo-client-codegen generate:serviceFactory --server=http://localhost:5000/graphql  --includes=./src/tests/**/*.gql --outputDir=./src/tests/generated",
     "test": "jest",
     "dev": "ts-node-dev --respawn src/index.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/graphql": "^14.0.7",
     "@types/pg": "^7.4.12",
     "apollo-cache-inmemory": "^1.4.2",
     "apollo-client": "^2.4.12",
+    "apollo-client-codegen": "0.0.7",
+    "apollo-link": "^1.2.6",
     "apollo-server": "^2.4.0",
     "apollo-server-express": "^2.4.0",
     "cors": "^2.8.5",

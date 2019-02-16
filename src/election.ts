@@ -1,22 +1,22 @@
-import { Election, ElectionStatus } from './db';
 import { gql } from 'apollo-server-core';
 import { IResolvers } from 'apollo-server';
 import { Context, context } from './context';
 import * as tokens from './tokens';
+import { getUsers, getUsersByEmail, createUser } from './db/user';
+import { Election, getElections, createElection } from './db/election';
 const uuidv4 = require('uuid/v4');
 
 export const schema = gql`
   extend type Query {
     getElections(input: GetElectionsRequest): GetElectionsResponse
-    listElections: ListElectionsResponse
   }
   extend type Mutation {
     createElection(input: CreateElectionRequest): CreateElectionResponse!
-    updateElection(input: UpdateElectionRequest): UpdateElectionResponse!
-    addCandidates(input: AddCandidatesRequest): AddCandidatesResponse!
-    removeCandidates(input: RemoveCandidatesRequest): RemoveCandidatesResponse!
-    setStatus(input: SetStatusRequest): SetStatusResponse!
     deleteElections(input: DeleteElectionsRequest): Boolean!
+    # updateElection(input: UpdateElectionRequest): UpdateElectionResponse!
+    # addCandidates(input: AddCandidatesRequest): AddCandidatesResponse!
+    # removeCandidates(input: RemoveCandidatesRequest): RemoveCandidatesResponse!
+    # setStatus(input: SetStatusRequest): SetStatusResponse!
 
     #addRegistrations (this should probably be allowed in both PENDING and ACTIVE)
     #removeRegistrations (this should probably be allowed only in PENDING)
@@ -29,12 +29,9 @@ export const schema = gql`
     elections: [Election!]!
   }
 
-  type ListElectionsResponse {
-    elections: [Election!]!
-  }
-
   input CreateElectionRequest {
     name: String!
+    description: String!
     candidates: [CreateCandidateInput!]!
     email: String
   }
@@ -44,6 +41,10 @@ export const schema = gql`
   }
   type CreateElectionResponse {
     election: Election!
+  }
+
+  input DeleteElectionsRequest {
+    ids: [ID!]!
   }
 
   """
@@ -72,10 +73,6 @@ export const schema = gql`
   }
   type RemoveCandidatesResponse {
     election: Election!
-  }
-
-  input DeleteElectionsRequest {
-    ids: [ID!]!
   }
 
   """
@@ -168,7 +165,7 @@ export const schema = gql`
 
 export const resolvers: IResolvers<any, Context> = {
   Query: {
-    getElections: (_, args: { input: { ids: string[] } }, { token, db }: Context) => {
+    getElections: (_, args: { input: { ids: string[] } }) => {
       const { ids } = args.input;
       /*
       TODO: Authorization.  only return if:
@@ -177,38 +174,51 @@ export const resolvers: IResolvers<any, Context> = {
          - this election is public
       */
 
-      const elections = db.getElections({ ids });
+      const elections = getElections({ ids });
       return { elections };
-    },
-    listElections: (_, args: {}, { token, db }: Context) => {
-      const { id } = tokens.validate(token);
-      return db.listElections({ createdBy: id });
     },
   },
   Election: {
-    createdBy: async (election: Election, _, { db }: Context) => {
-      return db.getUsers({ ids: [election.createdBy] })[0];
+    createdBy: async (election: Election) => {
+      console.log(election);
+      const [user] = await getUsers({ ids: [election.created_by] });
+      return user;
     },
   },
   Mutation: {
-    createElection: (
+    createElection: async (
       _,
-      args: { input: { name: string; candidates: CreateCandidateInput[] } },
-      { token, db }: Context
+      args: {
+        input: {
+          name: string;
+          description: string;
+          candidates: CreateCandidateInput[];
+          email: string;
+        };
+      }
     ) => {
       console.log('create election request received');
-      const { id } = tokens.validate(token);
-      const { name, candidates } = args.input;
+      //TODO: validate input
+
+      const { name, description, candidates, email } = args.input;
+      console.log(`looking up user by email ${email}...`);
+      let [user] = await getUsersByEmail({ emails: [email] });
+      if (!user) {
+        console.log(`couldn't find user with email ${email}, creating one...`);
+        user = await createUser({ user: { id: uuidv4(), email } });
+      }
+
       const now = new Date().toISOString();
-      const election = db.createElection({
+      let election = await createElection({
         election: {
           id: uuidv4(),
           name,
-          createdBy: id,
-          dateUpdated: now,
+          description,
+          created_by: user.id,
+          date_updated: now,
           candidates: candidates.map(candidate => ({ id: uuidv4(), ...candidate })),
           status: 'PENDING',
-          statusTransitions: [
+          status_transitions: [
             {
               on: now,
               status: 'PENDING',
@@ -216,18 +226,26 @@ export const resolvers: IResolvers<any, Context> = {
           ],
         },
       });
-      return { election };
+
+      return {
+        election: {
+          ...election,
+          createdBy: user.id,
+          dateUpdated: election.date_updated,
+          statusTransitions: election.status_transitions,
+        },
+      };
     },
-    deleteElections: (_, args: { input: { ids: string[] } }, { token, db }: Context) => {
-      const { id } = tokens.validate(token);
-      const { ids } = args.input;
+    deleteElections: (_, args: { input: { ids: string[] } }) => {
+      // const { id } = tokens.validate(token);
+      // const { ids } = args.input;
 
-      const elections = db.getElections({ ids });
-      const electionsAuthorizedForDeleteion = elections
-        .filter(({ createdBy }) => createdBy === id)
-        .map(({ id }) => id);
+      // const elections = db.getElections({ ids });
+      // const electionsAuthorizedForDeleteion = elections
+      //   .filter(({ createdBy }) => createdBy === id)
+      //   .map(({ id }) => id);
 
-      db.deleteElections({ ids: electionsAuthorizedForDeleteion });
+      // db.deleteElections({ ids: electionsAuthorizedForDeleteion });
       return true;
     },
   },

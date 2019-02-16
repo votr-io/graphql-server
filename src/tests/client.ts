@@ -18,7 +18,7 @@ export interface ClientFactoryOptions {
   token?: string;
 }
 
-export function clientFactory({ uri, token }: ClientFactoryOptions) {
+export function createClient({ uri, token }: ClientFactoryOptions) {
   return new ApolloClient({
     link: createHttpLink({
       uri,

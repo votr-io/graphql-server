@@ -31,10 +31,13 @@ export interface CandidateVotes {
   votes: number;
 }
 
-export const createElection = async (input: { election: Election }) => {
+export const createElection = async (input: {
+  election: Election;
+}): Promise<Election> => {
   const [columns, values] = columnsAndValues(input.election);
   const query = `INSERT INTO elections VALUES(${columns.join(', ')});`;
-  return await db.none(query, values);
+  await db.none(query, values);
+  return input.election;
 };
 
 export const getElections = async (input: { ids: String[] }): Promise<Election[]> => {
