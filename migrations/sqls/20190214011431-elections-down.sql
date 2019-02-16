@@ -1,7 +1,7 @@
-DROP TABLE elections;
+DROP TABLE IF EXISTS elections;
 
-DROP TYPE election_status;
+DROP TYPE IF EXISTS election_status;
 
-DROP TABLE users;
+DROP TABLE IF EXISTS users;
 
-DROP TYPE user_type;
+DROP TYPE IF EXISTS user_type;

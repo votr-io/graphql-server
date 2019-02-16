@@ -10,9 +10,9 @@
     "test": "jest",
     "dev": "ts-node-dev --respawn src/index.ts",
     "postinstall": "npm run build",
-    "build": "tsc",
+    "build": "tsc && npm run migrate",
     "migrate": "db-migrate reset && db-migrate up",
-    "start": "npm run migrate && node build/index.js"
+    "start": "node build/index.js"
   },
   "author": "",
   "license": "ISC",
