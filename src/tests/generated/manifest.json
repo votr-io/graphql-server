@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "operations": [
+    {
+      "signature": "a2f6c280ef8185e1eb76541b3c019523bb8b12a843910e2cd5693f887f6160b4",
+      "document": "mutation CreateElection($candidates:[CreateCandidateInput!]!,$description:String!,$email:String,$name:String!){createElection(input:{name:$name,description:$description,candidates:$candidates,email:$email}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}",
+      "metadata": {
+        "engineSignature": "mutation CreateElection($candidates:[CreateCandidateInput!]!,$description:String!,$email:String,$name:String!){createElection(input:{}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}"
+      }
+    }
+  ]
+}
