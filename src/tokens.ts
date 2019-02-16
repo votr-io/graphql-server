@@ -26,7 +26,7 @@ export function isWeakClaims(claims: Claims): claims is WeakClaims {
   return 'electionId' in claims;
 }
 
-const cryptr = new Cryptr('myTotalySecretKey');
+const cryptr = new Cryptr(ENV.TOKEN_SECRET);
 
 export interface AdminToken {
   userId: string;
