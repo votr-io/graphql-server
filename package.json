@@ -8,7 +8,11 @@
     "generate:client": "apollo client:codegen --endpoint http://localhost:5000/graphql --target=typescript --addTypename --outputFlat ./src/tests/generated/ --includes=src/tests/**/*.test.ts",
     "generate:serviceFactory": "apollo-client-codegen generate:serviceFactory --server=http://localhost:5000/graphql  --includes=./src/tests/**/*.gql --outputDir=./src/tests/generated",
     "test": "jest",
-    "dev": "ts-node-dev --respawn src/index.ts"
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "postinstall": "npm run build && npm run migrate",
+    "migrate": "db-migrate up",
+    "build": "tsc",
+    "start": "node build/index.js"
   },
   "author": "",
   "license": "ISC",
