@@ -3,11 +3,19 @@ import { db } from './db';
 export interface User {
   id: string;
   email: string;
+  date_created: string;
+  type: UserType;
 }
 
+export type UserType = 'WEAK';
+
 export const createUser = async (input: { user: User }): Promise<User> => {
-  const { id, email } = input.user;
-  await db.none('INSERT INTO users VALUES($(id), $(email));', { id, email });
+  const { id, email, type } = input.user;
+  await db.none('INSERT INTO users (id, email, type) VALUES($(id), $(email), $(type));', {
+    id,
+    email,
+    type,
+  });
   return input.user;
 };
 

@@ -7,6 +7,7 @@ export interface Election {
   name: string;
   description: string;
   created_by: string;
+  date_created: string;
   date_updated: string;
   candidates: {
     id: string;
@@ -43,6 +44,11 @@ export const createElection = async (input: {
 export const getElections = async (input: { ids: String[] }): Promise<Election[]> => {
   const { ids } = input;
   return await db.any('SELECT * FROM elections WHERE id IN ($1:csv);', ids);
+};
+
+export const deleteElections = async (input: { ids: String[] }) => {
+  const { ids } = input;
+  return await db.any('DELETE FROM elections WHERE id IN ($1:csv);', ids);
 };
 
 function columnsAndValues(o: Object): [string[], Object] {

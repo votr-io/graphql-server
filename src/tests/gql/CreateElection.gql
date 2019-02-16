@@ -16,6 +16,7 @@ mutation CreateElection(
       id
       name
       description
+      adminToken
       createdBy {
         id
         email

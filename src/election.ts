@@ -3,16 +3,16 @@ import { IResolvers } from 'apollo-server';
 import { Context, context } from './context';
 import * as tokens from './tokens';
 import { getUsers, getUsersByEmail, createUser } from './db/user';
-import { Election, getElections, createElection } from './db/election';
+import { Election, getElections, createElection, deleteElections } from './db/election';
 const uuidv4 = require('uuid/v4');
 
 export const schema = gql`
   extend type Query {
-    getElections(input: GetElectionsRequest): GetElectionsResponse
+    getElections(input: GetElectionsRequest!): GetElectionsResponse
   }
   extend type Mutation {
-    createElection(input: CreateElectionRequest): CreateElectionResponse!
-    deleteElections(input: DeleteElectionsRequest): Boolean!
+    createElection(input: CreateElectionRequest!): CreateElectionResponse!
+    deleteElections(input: DeleteElectionsRequest!): Boolean!
     # updateElection(input: UpdateElectionRequest): UpdateElectionResponse!
     # addCandidates(input: AddCandidatesRequest): AddCandidatesResponse!
     # removeCandidates(input: RemoveCandidatesRequest): RemoveCandidatesResponse!
@@ -119,6 +119,7 @@ export const schema = gql`
     status: ElectionStatus!
     statusTransitions: [ElectionStatusTransition!]!
     results: Results
+    adminToken: String
   }
 
   """
@@ -180,9 +181,12 @@ export const resolvers: IResolvers<any, Context> = {
   },
   Election: {
     createdBy: async (election: Election) => {
-      console.log(election);
       const [user] = await getUsers({ ids: [election.created_by] });
       return user;
+    },
+    adminToken: async (election: Election) => {
+      const [user] = await getUsers({ ids: [election.created_by] });
+      return tokens.encryptAdminToken({ userId: user.id, electionId: election.id });
     },
   },
   Mutation: {
@@ -201,20 +205,24 @@ export const resolvers: IResolvers<any, Context> = {
       //TODO: validate input
 
       const { name, description, candidates, email } = args.input;
+      const now = new Date().toISOString();
+
       console.log(`looking up user by email ${email}...`);
       let [user] = await getUsersByEmail({ emails: [email] });
       if (!user) {
         console.log(`couldn't find user with email ${email}, creating one...`);
-        user = await createUser({ user: { id: uuidv4(), email } });
+        user = await createUser({
+          user: { id: uuidv4(), email, date_created: now, type: 'WEAK' },
+        });
       }
 
-      const now = new Date().toISOString();
       let election = await createElection({
         election: {
           id: uuidv4(),
           name,
           description,
           created_by: user.id,
+          date_created: now,
           date_updated: now,
           candidates: candidates.map(candidate => ({ id: uuidv4(), ...candidate })),
           status: 'PENDING',
@@ -236,16 +244,24 @@ export const resolvers: IResolvers<any, Context> = {
         },
       };
     },
-    deleteElections: (_, args: { input: { ids: string[] } }) => {
-      // const { id } = tokens.validate(token);
-      // const { ids } = args.input;
+    deleteElections: async (
+      _,
+      args: { input: { ids: string[] } },
+      { token }: Context
+    ) => {
+      const claims = tokens.validate(token);
+      const { ids } = args.input;
 
-      // const elections = db.getElections({ ids });
-      // const electionsAuthorizedForDeleteion = elections
-      //   .filter(({ createdBy }) => createdBy === id)
-      //   .map(({ id }) => id);
+      const elections = await getElections({ ids });
+      const electionsAuthorizedForDeleteion = elections
+        .filter(({ created_by }) => created_by === claims.userId)
+        .filter(
+          ({ id }) => (tokens.isWeakClaims(claims) ? id === claims.electionId : true) //if the claims are weak, there's only one election they can delete
+        )
+        .map(({ id }) => id);
 
-      // db.deleteElections({ ids: electionsAuthorizedForDeleteion });
+      await deleteElections({ ids: electionsAuthorizedForDeleteion });
+
       return true;
     },
   },

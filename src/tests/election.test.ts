@@ -1,63 +1,23 @@
 import { CreateElectionMutation } from './generated/serviceFactory';
 import { createElection } from './../db/election';
-import { service, client } from './service';
+import { service as baseService, client, createServiceWithAccessToken } from './service';
 import { CreateElection, CreateElectionVariables } from './generated/CreateElection';
 import { FetchResult } from 'apollo-link';
+import ApolloClient from 'apollo-client';
+import { createClient } from './client';
 
-// async function newUserNewElection(input: {
-//   name: string;
-//   candidates: {
-//     name: string;
-//     description?: string;
-//   }[];
-// }): Promise<{
-//   election: any;
-//   client: ApolloClient<any>;
-//   cleanUp: () => Promise<void>;
-// }> {
-//   const username = 'election-tester';
-//   const { client, cleanUp } = await newUser(username);
-//   const { name, candidates } = input;
-//   const {
-//     data: {
-//       createElection: { election },
-//     },
-//   } = await createElection.call(client, { name, candidates });
-
-//   expect(election.name).toBe(name);
-//   expect(election.createdBy.username).toBe(username);
-//   //TODO: test the rest of election properties
-
-//   return {
-//     client,
-//     election,
-//     cleanUp: async () => {
-//       await deleteElections.call(client, { ids: [election.id] });
-//       const {
-//         data: {
-//           getElections: { elections },
-//         },
-//       } = await getElections.call(client, { ids: [election.id] });
-//       expect(elections.length).toBe(0);
-//       await cleanUp();
-//     },
-//   };
-// }
-
-test('create election', async () => {
-  const name = 'create election test';
-  const description = 'this sure is an election';
-  const candidates = [
-    {
-      name: 'Gorilla',
-    },
-    {
-      name: 'Tiger',
-    },
-  ];
-  const email = 'test@fake.com';
-
-  const res = await service.CreateElection({
+async function makePublicElection(input: {
+  name: string;
+  description: string;
+  email: string;
+  candidates: {
+    name: string;
+    description?: string;
+  }[];
+}) {
+  //create the election and run our tests
+  const { name, description, email, candidates } = input;
+  const res = await baseService.CreateElection({
     name,
     description,
     candidates,
@@ -77,4 +37,48 @@ test('create election', async () => {
   expect(election.status).toBe('PENDING');
   expect(election.statusTransitions[0].status).toBe('PENDING');
   expect(election.results).toBeNull();
+
+  //perform a weak login with the adminToken we just got back
+  const {
+    data: {
+      weakLogin: { accessToken },
+    },
+  } = await baseService.WeakLogin({ adminToken: election.adminToken });
+
+  const service = createServiceWithAccessToken(accessToken);
+  return {
+    election,
+    service,
+    cleanUp: async () => {
+      await service.DeleteElection({ id: election.id });
+      const {
+        data: {
+          getElections: { elections },
+        },
+      } = await service.GetElections({ ids: [election.id] });
+      expect(elections.length).toBe(0);
+    },
+  };
+}
+
+test('create election', async () => {
+  const name = 'create election test';
+  const description = 'this sure is an election';
+  const candidates = [
+    {
+      name: 'Gorilla',
+    },
+    {
+      name: 'Tiger',
+    },
+  ];
+  const email = 'test@fake.com';
+
+  const { cleanUp } = await makePublicElection({
+    name,
+    description,
+    candidates,
+    email,
+  });
+  await cleanUp();
 });

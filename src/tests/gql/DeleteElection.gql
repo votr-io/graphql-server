@@ -1,0 +1,3 @@
+mutation DeleteElection($id: ID!) {
+  deleteElections(input: { ids: [$id] })
+}

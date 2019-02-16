@@ -1,0 +1,7 @@
+query GetElections($ids: [ID!]!) {
+  getElections(input: { ids: $ids }) {
+    elections {
+      id
+    }
+  }
+}
