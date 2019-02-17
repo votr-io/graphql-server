@@ -3,6 +3,7 @@
 import ApolloClient, { QueryOptions, MutationOptions } from 'apollo-client';
 import gql from 'graphql-tag';
 
+import { AddCandidates, AddCandidatesVariables } from './AddCandidates'
 import { CreateElection, CreateElectionVariables } from './CreateElection'
 import { DeleteElection, DeleteElectionVariables } from './DeleteElection'
 import { GetElections, GetElectionsVariables } from './GetElections'
@@ -43,6 +44,14 @@ export function createService(client: ApolloClient<any>) {
     },
 
     
+    AddCandidates: (variables: AddCandidatesVariables, options: Omit<MutationOptions<AddCandidates, AddCandidatesVariables>, 'mutation' | 'variables'> = {}) => {
+      return client.mutate<AddCandidates, AddCandidatesVariables>({
+        ...options,
+        mutation: AddCandidatesMutation,
+        variables
+      });
+    },
+
     CreateElection: (variables: CreateElectionVariables, options: Omit<MutationOptions<CreateElection, CreateElectionVariables>, 'mutation' | 'variables'> = {}) => {
       return client.mutate<CreateElection, CreateElectionVariables>({
         ...options,
@@ -71,6 +80,8 @@ export function createService(client: ApolloClient<any>) {
 }
 
 
+  export const AddCandidatesMutation = gql`mutation AddCandidates($candidates:[CreateCandidateInput!]!,$electionId:ID!){addCandidates(input:{electionId:$electionId,candidates:$candidates}){__typename election{__typename adminToken candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
+  
   export const CreateElectionMutation = gql`mutation CreateElection($candidates:[CreateCandidateInput!]!,$description:String!,$email:String,$name:String!){createElection(input:{name:$name,description:$description,candidates:$candidates,email:$email}){__typename election{__typename adminToken candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
   
   export const DeleteElectionMutation = gql`mutation DeleteElection($id:ID!){deleteElections(input:{ids:[$id]})}`

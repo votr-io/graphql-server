@@ -1,9 +1,17 @@
 import { gql } from 'apollo-server-core';
-import { IResolvers } from 'apollo-server';
+import { IResolvers, TransformRootFields } from 'apollo-server';
 import { Context, context } from './context';
 import * as tokens from './tokens';
 import { getUsers, getUsersByEmail, createUser } from './db/user';
-import { Election, getElections, createElection, deleteElections } from './db/election';
+import {
+  Election,
+  getElections,
+  createElection,
+  deleteElections,
+  getElection,
+  createCandidates,
+} from './db/election';
+import * as lodash from 'lodash';
 const uuidv4 = require('uuid/v4');
 
 export const schema = gql`
@@ -14,8 +22,8 @@ export const schema = gql`
     createElection(input: CreateElectionRequest!): CreateElectionResponse!
     deleteElections(input: DeleteElectionsRequest!): Boolean!
     # updateElection(input: UpdateElectionRequest): UpdateElectionResponse!
-    # addCandidates(input: AddCandidatesRequest): AddCandidatesResponse!
-    # removeCandidates(input: RemoveCandidatesRequest): RemoveCandidatesResponse!
+    addCandidates(input: AddCandidatesRequest): AddCandidatesResponse!
+    removeCandidates(input: RemoveCandidatesRequest): RemoveCandidatesResponse!
     # setStatus(input: SetStatusRequest): SetStatusResponse!
 
     #addRegistrations (this should probably be allowed in both PENDING and ACTIVE)
@@ -166,7 +174,7 @@ export const schema = gql`
 
 export const resolvers: IResolvers<any, Context> = {
   Query: {
-    getElections: (_, args: { input: { ids: string[] } }) => {
+    getElections: async (_, args: { input: { ids: string[] } }) => {
       const { ids } = args.input;
       /*
       TODO: Authorization.  only return if:
@@ -175,8 +183,8 @@ export const resolvers: IResolvers<any, Context> = {
          - this election is public
       */
 
-      const elections = getElections({ ids });
-      return { elections };
+      const elections = await getElections({ ids });
+      return { elections: elections.map(toApiElection) };
     },
   },
   Election: {
@@ -236,12 +244,7 @@ export const resolvers: IResolvers<any, Context> = {
       });
 
       return {
-        election: {
-          ...election,
-          createdBy: user.id,
-          dateUpdated: election.date_updated,
-          statusTransitions: election.status_transitions,
-        },
+        election: toApiElection(election),
       };
     },
     deleteElections: async (
@@ -260,9 +263,58 @@ export const resolvers: IResolvers<any, Context> = {
         )
         .map(({ id }) => id);
 
+      if (electionsAuthorizedForDeleteion.length == 0) {
+        return true;
+      }
+
       await deleteElections({ ids: electionsAuthorizedForDeleteion });
 
       return true;
+    },
+
+    addCandidates: async (
+      _,
+      args: { input: { electionId: string; candidates: CreateCandidateInput[] } },
+      { token }: Context
+    ) => {
+      const claims = tokens.validate(token);
+      const { electionId, candidates } = args.input;
+
+      const election = await getElection(electionId);
+
+      if (election.created_by !== claims.userId) {
+        throw new Error('403');
+      }
+      if (tokens.isWeakClaims(claims) && claims.electionId !== election.id) {
+        throw new Error('403');
+      }
+
+      console.log(
+        `user is requesting to add the following candidates: ${JSON.stringify(
+          candidates
+        )}`
+      );
+      const dedupedCandidates = lodash
+        .uniqBy(candidates, ({ name }) => name.toLowerCase())
+        .filter(
+          newCandidate =>
+            !election.candidates.find(
+              ({ name }) => name.toLowerCase() === newCandidate.name.toLowerCase()
+            )
+        );
+      console.log(
+        `actually adding the following candidates: ${JSON.stringify(dedupedCandidates)}`
+      );
+
+      if (dedupedCandidates.length == 0) {
+        return { election: toApiElection(election) };
+      }
+
+      const updatedElection = await createCandidates({
+        electionId,
+        candidates: dedupedCandidates.map(candidate => ({ id: uuidv4(), ...candidate })),
+      });
+      return { election: toApiElection(updatedElection) };
     },
   },
 };
@@ -270,4 +322,12 @@ export const resolvers: IResolvers<any, Context> = {
 interface CreateCandidateInput {
   name: string;
   description: string;
+}
+
+function toApiElection(election: Election) {
+  return {
+    ...election,
+    dateUpdated: election.date_updated,
+    statusTransitions: election.status_transitions,
+  };
 }

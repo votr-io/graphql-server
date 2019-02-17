@@ -1,0 +1,30 @@
+mutation AddCandidates($electionId: ID!, $candidates: [CreateCandidateInput!]!) {
+  addCandidates(input: { electionId: $electionId, candidates: $candidates }) {
+    election {
+      id
+      name
+      description
+      adminToken
+      createdBy {
+        id
+        email
+      }
+      candidates {
+        id
+        name
+        description
+      }
+      status
+      statusTransitions {
+        on
+        status
+      }
+      results {
+        winner {
+          id
+          name
+        }
+      }
+    }
+  }
+}

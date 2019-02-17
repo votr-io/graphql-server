@@ -58,13 +58,12 @@ WHERE id = $1;
 `;
 
 export const createCandidates = async (input: {
-  electionId: String;
+  electionId: string;
   candidates: CreateCandidateInput[];
 }): Promise<Election> => {
   const { electionId, candidates } = input;
   await db.none(createCandidatesSQL, [electionId, JSON.stringify(candidates)]);
-  const [election] = await getElections({ ids: [electionId] });
-  return election;
+  return getElection(electionId);
 };
 
 const deleteCandidateSQL = `
@@ -82,11 +81,18 @@ WHERE id = $1;
 `;
 
 export const deleteCandidates = async (input: {
-  electionId: String;
-  candidateIds: String[];
-}) => {
+  electionId: string;
+  candidateIds: string[];
+}): Promise<Election> => {
   const { electionId, candidateIds } = input;
-  return await db.any(deleteCandidateSQL, [electionId, candidateIds]);
+  await db.any(deleteCandidateSQL, [electionId, candidateIds]);
+  return getElection(electionId);
+};
+
+export const getElection = async (id: string): Promise<Election> => {
+  const [election] = await getElections({ ids: [id] });
+  if (!election) throw new Error('404'); //TODO: figure out how to type errors
+  return election;
 };
 
 function columnsAndValues(o: Object): [string[], Object] {

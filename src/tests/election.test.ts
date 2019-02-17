@@ -1,22 +1,29 @@
-import { CreateElectionMutation } from './generated/serviceFactory';
-import { createElection } from './../db/election';
-import { service as baseService, client, createServiceWithAccessToken } from './service';
-import { CreateElection, CreateElectionVariables } from './generated/CreateElection';
-import { FetchResult } from 'apollo-link';
-import ApolloClient from 'apollo-client';
-import { createClient } from './client';
+import { service as baseService, createServiceWithAccessToken } from './service';
 
-async function makePublicElection(input: {
-  name: string;
-  description: string;
-  email: string;
-  candidates: {
-    name: string;
+export async function makePublicElection(
+  input: {
+    name?: string;
     description?: string;
-  }[];
-}) {
+    email?: string;
+    candidates?: {
+      name: string;
+      description?: string;
+    }[];
+  } = {}
+) {
+  const name = input.name || 'create election test';
+  const description = input.description || 'this sure is an election';
+  const candidates = input.candidates || [
+    {
+      name: 'Gorilla',
+    },
+    {
+      name: 'Tiger',
+    },
+  ];
+  const email = input.email || 'test@fake.com';
+
   //create the election and run our tests
-  const { name, description, email, candidates } = input;
   const res = await baseService.CreateElection({
     name,
     description,
@@ -44,7 +51,6 @@ async function makePublicElection(input: {
       weakLogin: { accessToken },
     },
   } = await baseService.WeakLogin({ adminToken: election.adminToken });
-
   const service = createServiceWithAccessToken(accessToken);
   return {
     election,
@@ -62,23 +68,6 @@ async function makePublicElection(input: {
 }
 
 test('create election', async () => {
-  const name = 'create election test';
-  const description = 'this sure is an election';
-  const candidates = [
-    {
-      name: 'Gorilla',
-    },
-    {
-      name: 'Tiger',
-    },
-  ];
-  const email = 'test@fake.com';
-
-  const { cleanUp } = await makePublicElection({
-    name,
-    description,
-    candidates,
-    email,
-  });
+  const { cleanUp } = await makePublicElection();
   await cleanUp();
 });
