@@ -1,4 +1,6 @@
 import { service as baseService, createServiceWithAccessToken } from './service';
+import { GraphQLObjectType, GraphQLNonNull } from 'graphql';
+import { CreateElection, CreateElectionVariables } from './generated/CreateElection';
 
 export async function makePublicElection(
   input: {
@@ -70,4 +72,54 @@ export async function makePublicElection(
 test('create election', async () => {
   const { cleanUp } = await makePublicElection();
   await cleanUp();
+});
+
+interface ValidationTest {
+  input: CreateElectionVariables;
+  expectedError: string;
+}
+
+const validationTestCases: ValidationTest[] = [
+  {
+    input: {
+      name: '',
+      description: '',
+      email: 'test@fake.com',
+      candidates: [{ name: 'Gorilla' }, { name: 'Tiger' }],
+    },
+    expectedError: 'name is required',
+  },
+  {
+    input: {
+      name: 'this sure is an election',
+      description: '',
+      email: '',
+      candidates: [{ name: 'Gorilla' }, { name: 'Tiger' }],
+    },
+    expectedError: 'email is required',
+  },
+  {
+    input: {
+      name: 'this sure is an election',
+      description: 'jkl',
+      email: 'test@fake.com',
+      candidates: [{ name: '' }, { name: 'Tiger' }],
+    },
+    expectedError: 'candidate.name is required',
+  },
+  {
+    input: {
+      name: 'this sure is an election',
+      description: 'jkl',
+      email: 'test@fake.com',
+      candidates: [{ name: 'Tiger' }],
+    },
+    expectedError: 'at least two candidates',
+  },
+];
+
+test('validation', async () => {
+  validationTestCases.forEach(async ({ input, expectedError }) => {
+    await expect(baseService.CreateElection(input)).rejects.toThrowError(expectedError);
+  });
 });

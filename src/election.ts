@@ -1,4 +1,10 @@
-import { gql } from 'apollo-server-core';
+import {
+  gql,
+  ValidationError,
+  AuthenticationError,
+  ForbiddenError,
+  UserInputError,
+} from 'apollo-server-core';
 import { IResolvers, TransformRootFields } from 'apollo-server';
 import { Context, context } from './context';
 import * as tokens from './tokens';
@@ -10,6 +16,8 @@ import {
   deleteElections,
   getElection,
   createCandidates,
+  withNotFound,
+  deleteCandidates,
 } from './db/election';
 import * as lodash from 'lodash';
 const uuidv4 = require('uuid/v4');
@@ -210,9 +218,25 @@ export const resolvers: IResolvers<any, Context> = {
       }
     ) => {
       console.log('create election request received');
-      //TODO: validate input
-
       const { name, description, candidates, email } = args.input;
+      //TODO: validate input
+      const errors: string[] = [];
+      if (name === '') {
+        errors.push('name is required');
+      }
+      if (email === '') {
+        errors.push('email is required if you do not have an account');
+      }
+      if (candidates.length < 2) {
+        errors.push('at least two candidates are required');
+      }
+      if (candidates.filter(({ name }) => name === '').length !== 0) {
+        errors.push('candidate.name is required');
+      }
+      if (errors.length > 0) {
+        throw new UserInputError(`createElection error: ${errors.join(', ')}`);
+      }
+
       const now = new Date().toISOString();
 
       console.log(`looking up user by email ${email}...`);
@@ -256,18 +280,18 @@ export const resolvers: IResolvers<any, Context> = {
       const { ids } = args.input;
 
       const elections = await getElections({ ids });
-      const electionsAuthorizedForDeleteion = elections
+      const electionsAuthorizedForDeletion = elections
         .filter(({ created_by }) => created_by === claims.userId)
         .filter(
           ({ id }) => (tokens.isWeakClaims(claims) ? id === claims.electionId : true) //if the claims are weak, there's only one election they can delete
         )
         .map(({ id }) => id);
 
-      if (electionsAuthorizedForDeleteion.length == 0) {
+      if (electionsAuthorizedForDeletion.length == 0) {
         return true;
       }
 
-      await deleteElections({ ids: electionsAuthorizedForDeleteion });
+      await deleteElections({ ids: electionsAuthorizedForDeletion });
 
       return true;
     },
@@ -277,23 +301,10 @@ export const resolvers: IResolvers<any, Context> = {
       args: { input: { electionId: string; candidates: CreateCandidateInput[] } },
       { token }: Context
     ) => {
-      const claims = tokens.validate(token);
       const { electionId, candidates } = args.input;
 
-      const election = await getElection(electionId);
+      const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
 
-      if (election.created_by !== claims.userId) {
-        throw new Error('403');
-      }
-      if (tokens.isWeakClaims(claims) && claims.electionId !== election.id) {
-        throw new Error('403');
-      }
-
-      console.log(
-        `user is requesting to add the following candidates: ${JSON.stringify(
-          candidates
-        )}`
-      );
       const dedupedCandidates = lodash
         .uniqBy(candidates, ({ name }) => name.toLowerCase())
         .filter(
@@ -302,9 +313,6 @@ export const resolvers: IResolvers<any, Context> = {
               ({ name }) => name.toLowerCase() === newCandidate.name.toLowerCase()
             )
         );
-      console.log(
-        `actually adding the following candidates: ${JSON.stringify(dedupedCandidates)}`
-      );
 
       if (dedupedCandidates.length == 0) {
         return { election: toApiElection(election) };
@@ -316,8 +324,47 @@ export const resolvers: IResolvers<any, Context> = {
       });
       return { election: toApiElection(updatedElection) };
     },
+    removeCandidates: async (
+      _,
+      args: { input: { electionId: string; candidateIds: string[] } },
+      { token }: Context
+    ) => {
+      const { electionId, candidateIds } = args.input;
+
+      const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
+
+      if (candidateIds.length === 0) {
+        return { election: toApiElection(election) };
+      }
+
+      if (election.candidates.filter(({ id }) => !candidateIds.includes(id)).length < 2) {
+        throw new UserInputError('an election must have at least two candidates');
+      }
+
+      const updatedElection = await deleteCandidates({
+        electionId,
+        candidateIds,
+      });
+      return { election: toApiElection(updatedElection) };
+    },
   },
 };
+async function getElectionAndCheckPermissionsToUpdate(
+  token: string,
+  electionId: string
+): Promise<Election> {
+  const claims = tokens.validate(token);
+  const election = await getElection(electionId).then(withNotFound);
+
+  if (election.created_by !== claims.userId) {
+    throw new ForbiddenError('403');
+  }
+  if (tokens.isWeakClaims(claims) && claims.electionId !== election.id) {
+    throw new ForbiddenError('403');
+  }
+
+  return election;
+}
 
 interface CreateCandidateInput {
   name: string;

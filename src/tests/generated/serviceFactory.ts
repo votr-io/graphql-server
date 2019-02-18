@@ -7,6 +7,7 @@ import { AddCandidates, AddCandidatesVariables } from './AddCandidates'
 import { CreateElection, CreateElectionVariables } from './CreateElection'
 import { DeleteElection, DeleteElectionVariables } from './DeleteElection'
 import { GetElections, GetElectionsVariables } from './GetElections'
+import { RemoveCandidates, RemoveCandidatesVariables } from './RemoveCandidates'
 import { WeakLogin, WeakLoginVariables } from './WeakLogin'
 
 //can be removed if this bug is fixed:
@@ -68,6 +69,14 @@ export function createService(client: ApolloClient<any>) {
       });
     },
 
+    RemoveCandidates: (variables: RemoveCandidatesVariables, options: Omit<MutationOptions<RemoveCandidates, RemoveCandidatesVariables>, 'mutation' | 'variables'> = {}) => {
+      return client.mutate<RemoveCandidates, RemoveCandidatesVariables>({
+        ...options,
+        mutation: RemoveCandidatesMutation,
+        variables
+      });
+    },
+
     WeakLogin: (variables: WeakLoginVariables, options: Omit<MutationOptions<WeakLogin, WeakLoginVariables>, 'mutation' | 'variables'> = {}) => {
       return client.mutate<WeakLogin, WeakLoginVariables>({
         ...options,
@@ -87,5 +96,7 @@ export function createService(client: ApolloClient<any>) {
   export const DeleteElectionMutation = gql`mutation DeleteElection($id:ID!){deleteElections(input:{ids:[$id]})}`
   
   export const GetElectionsQuery = gql`query GetElections($ids:[ID!]!){getElections(input:{ids:$ids}){__typename elections{__typename id}}}`
+  
+  export const RemoveCandidatesMutation = gql`mutation RemoveCandidates($candidateIds:[ID!]!,$electionId:ID!){removeCandidates(input:{electionId:$electionId,candidateIds:$candidateIds}){__typename election{__typename adminToken candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
   
   export const WeakLoginMutation = gql`mutation WeakLogin($adminToken:String!){weakLogin(input:{adminToken:$adminToken}){__typename accessToken}}`

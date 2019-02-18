@@ -91,8 +91,12 @@ export const deleteCandidates = async (input: {
 
 export const getElection = async (id: string): Promise<Election> => {
   const [election] = await getElections({ ids: [id] });
-  if (!election) throw new Error('404'); //TODO: figure out how to type errors
   return election;
+};
+
+export const withNotFound = async <T>(t: T): Promise<T> => {
+  if (!t) throw new Error('404'); //TODO: figure out how to type errors
+  return t;
 };
 
 function columnsAndValues(o: Object): [string[], Object] {

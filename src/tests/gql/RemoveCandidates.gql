@@ -1,0 +1,30 @@
+mutation RemoveCandidates($electionId: ID!, $candidateIds: [ID!]!) {
+  removeCandidates(input: { electionId: $electionId, candidateIds: $candidateIds }) {
+    election {
+      id
+      name
+      description
+      adminToken
+      createdBy {
+        id
+        email
+      }
+      candidates {
+        id
+        name
+        description
+      }
+      status
+      statusTransitions {
+        on
+        status
+      }
+      results {
+        winner {
+          id
+          name
+        }
+      }
+    }
+  }
+}

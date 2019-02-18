@@ -1,4 +1,4 @@
-import { makePublicElection } from './election.test';
+import { makePublicElection } from './createElection.test';
 import * as _ from 'lodash';
 
 interface AddCandidateTest {
