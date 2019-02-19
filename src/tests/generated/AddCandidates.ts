@@ -42,7 +42,6 @@ export interface AddCandidates_addCandidates_election {
   id: string;
   name: string;
   description: string;
-  adminToken: string | null;
   createdBy: AddCandidates_addCandidates_election_createdBy;
   candidates: AddCandidates_addCandidates_election_candidates[];
   status: ElectionStatus;

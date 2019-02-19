@@ -42,7 +42,6 @@ export interface SetStatus_setStatus_election {
   id: string;
   name: string;
   description: string;
-  adminToken: string | null;
   createdBy: SetStatus_setStatus_election_createdBy;
   candidates: SetStatus_setStatus_election_candidates[];
   status: ElectionStatus;

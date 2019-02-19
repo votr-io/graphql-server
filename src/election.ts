@@ -53,6 +53,7 @@ export const schema = gql`
   }
   type CreateElectionResponse {
     election: Election!
+    adminToken: String
   }
 
   input DeleteElectionsRequest {
@@ -131,7 +132,6 @@ export const schema = gql`
     status: ElectionStatus!
     statusTransitions: [ElectionStatusTransition!]!
     results: Results
-    adminToken: String
   }
 
   """
@@ -196,9 +196,8 @@ export const resolvers: IResolvers<any, Context> = {
       const [user] = await getUsers({ ids: [election.created_by] });
       return user;
     },
-    adminToken: async (election: Election) => {
-      const [user] = await getUsers({ ids: [election.created_by] });
-      return tokens.encryptAdminToken({ userId: user.id, electionId: election.id });
+    candidates: (election: Election) => {
+      return shuffle(election.candidates);
     },
   },
   Mutation: {
@@ -262,8 +261,13 @@ export const resolvers: IResolvers<any, Context> = {
 
       return {
         election: toApiElection(election),
+        adminToken: tokens.encryptAdminToken({
+          userId: user.id,
+          electionId: election.id,
+        }),
       };
     },
+
     deleteElections: async (
       _,
       args: { input: { ids: string[] } },
@@ -355,12 +359,9 @@ export const resolvers: IResolvers<any, Context> = {
       args: { input: { electionId: string; status: ElectionStatus } },
       { token }: Context
     ) => {
-      const requestId = uuidv4();
       const { electionId, status } = args.input;
-      console.log(`[${requestId}] [${electionId}] setStatus called with ${status}`);
 
       const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
-      console.log(`[${requestId}] election.status = ${election.status}`);
 
       if (election.status === status) {
         return { election: toApiElection(election) };
@@ -368,19 +369,19 @@ export const resolvers: IResolvers<any, Context> = {
 
       //TODO: clean up this validation and make it data driven with good error messaging
       if (election.status === 'PENDING' && status !== 'OPEN') {
-        console.log(`[${requestId}] failing`);
         throw new UserInputError('invalid status transition');
       }
       if (election.status === 'OPEN' && status !== 'TALLYING') {
-        console.log(`[${requestId}] failing`);
         throw new UserInputError('invalid status transition');
       }
 
+      const now = new Date().toISOString();
       const updatedElection = await updateElection({
         election: {
           ...election,
           status,
-          date_updated: new Date().toISOString(),
+          date_updated: now,
+          status_transitions: [...election.status_transitions, { status, on: now }],
         },
       });
       return { election: toApiElection(updatedElection) };
@@ -415,4 +416,25 @@ function toApiElection(election: Election) {
     dateUpdated: election.date_updated,
     statusTransitions: election.status_transitions,
   };
+}
+
+//https://bost.ocks.org/mike/shuffle/
+function shuffle<T>(ogArray: T[]) {
+  const array = lodash.cloneDeep(ogArray);
+  var m = array.length,
+    t,
+    i;
+
+  // While there remain elements to shuffle…
+  while (m) {
+    // Pick a remaining element…
+    i = Math.floor(Math.random() * m--);
+
+    // And swap it with the current element.
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+
+  return array;
 }

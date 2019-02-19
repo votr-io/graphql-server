@@ -1,6 +1,5 @@
 import { service as baseService, createServiceWithAccessToken } from './service';
-import { GraphQLObjectType, GraphQLNonNull } from 'graphql';
-import { CreateElection, CreateElectionVariables } from './generated/CreateElection';
+import { CreateElectionVariables } from './generated/CreateElection';
 
 export async function makePublicElection(
   input: {
@@ -17,10 +16,19 @@ export async function makePublicElection(
   const description = input.description || 'this sure is an election';
   const candidates = input.candidates || [
     {
+      name: 'Tiger',
+    },
+    {
       name: 'Gorilla',
     },
     {
-      name: 'Tiger',
+      name: 'Turtle',
+    },
+    {
+      name: 'Leopard',
+    },
+    {
+      name: 'Owl',
     },
   ];
   const email = input.email || 'test@fake.com';
@@ -32,7 +40,7 @@ export async function makePublicElection(
     candidates,
     email,
   });
-  const { election } = res.data.createElection;
+  const { election, adminToken } = res.data.createElection;
 
   //info we sent in
   expect(election.name).toBe(name);
@@ -52,7 +60,7 @@ export async function makePublicElection(
     data: {
       weakLogin: { accessToken },
     },
-  } = await baseService.WeakLogin({ adminToken: election.adminToken });
+  } = await baseService.WeakLogin({ adminToken: adminToken });
   const service = createServiceWithAccessToken(accessToken);
   return {
     election,

@@ -42,7 +42,6 @@ export interface CreateElection_createElection_election {
   id: string;
   name: string;
   description: string;
-  adminToken: string | null;
   createdBy: CreateElection_createElection_election_createdBy;
   candidates: CreateElection_createElection_election_candidates[];
   status: ElectionStatus;
@@ -52,6 +51,7 @@ export interface CreateElection_createElection_election {
 
 export interface CreateElection_createElection {
   __typename: "CreateElectionResponse";
+  adminToken: string | null;
   election: CreateElection_createElection_election;
 }
 

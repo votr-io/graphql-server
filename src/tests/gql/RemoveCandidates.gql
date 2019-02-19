@@ -4,7 +4,6 @@ mutation RemoveCandidates($electionId: ID!, $candidateIds: [ID!]!) {
       id
       name
       description
-      adminToken
       createdBy {
         id
         email

@@ -22,3 +22,8 @@ CREATE TABLE elections (
     status election_status NOT NULL,
     status_transitions jsonb NOT NULL
 );
+
+CREATE TABLE ballots (
+    election_id UUID NOT NULL REFERENCES elections(id),
+    ballot VARCHAR (800) NOT NULL
+);

@@ -42,7 +42,6 @@ export interface RemoveCandidates_removeCandidates_election {
   id: string;
   name: string;
   description: string;
-  adminToken: string | null;
   createdBy: RemoveCandidates_removeCandidates_election_createdBy;
   candidates: RemoveCandidates_removeCandidates_election_candidates[];
   status: ElectionStatus;

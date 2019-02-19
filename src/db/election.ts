@@ -1,6 +1,7 @@
 import { CreateCandidateInput } from './../tests/generated/globalTypes';
 import { db } from './db';
 import { isObject } from 'util';
+import { UserInputError } from 'apollo-server';
 
 export interface Election {
   id: string;
@@ -56,7 +57,9 @@ export const getElections = async (input: { ids: String[] }): Promise<Election[]
 
 export const deleteElections = async (input: { ids: String[] }) => {
   const { ids } = input;
-  return await db.any('DELETE FROM elections WHERE id IN ($1:csv);', ids);
+  //TODO: make this transactional
+  await db.none('DELETE FROM ballots WHERE election_id IN ($1:csv);', ids);
+  return await db.none('DELETE FROM elections WHERE id IN ($1:csv);', ids);
 };
 
 const createCandidatesSQL = `
@@ -103,8 +106,19 @@ export const getElection = async (id: string): Promise<Election> => {
   return election;
 };
 
+export const createBallot = async (input: {
+  electionId: string;
+  candidateIndexes: number[];
+}) => {
+  const { electionId, candidateIndexes } = input;
+  await db.none(`INSERT INTO ballots VALUES($1, $2)`, [
+    electionId,
+    JSON.stringify(candidateIndexes),
+  ]);
+};
+
 export const withNotFound = async <T>(t: T): Promise<T> => {
-  if (!t) throw new Error('404'); //TODO: figure out how to type errors
+  if (!t) throw new UserInputError('404'); //TODO: figure out how to type errors
   return t;
 };
 

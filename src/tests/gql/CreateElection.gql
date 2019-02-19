@@ -12,11 +12,11 @@ mutation CreateElection(
       email: $email
     }
   ) {
+    adminToken
     election {
       id
       name
       description
-      adminToken
       createdBy {
         id
         email

@@ -4,7 +4,6 @@ mutation AddCandidates($electionId: ID!, $candidates: [CreateCandidateInput!]!) 
       id
       name
       description
-      adminToken
       createdBy {
         id
         email
