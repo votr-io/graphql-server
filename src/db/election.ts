@@ -41,6 +41,14 @@ export const createElection = async (input: {
   return input.election;
 };
 
+export const updateElection = async (input: {
+  election: Election;
+}): Promise<Election> => {
+  const query = `UPDATE elections SET name = $(name), description = $(description), date_updated = $(date_updated), status = $(status) WHERE id = $(id)`;
+  await db.none(query, input.election);
+  return input.election;
+};
+
 export const getElections = async (input: { ids: String[] }): Promise<Election[]> => {
   const { ids } = input;
   return await db.any('SELECT * FROM elections WHERE id IN ($1:csv);', ids);
@@ -53,7 +61,8 @@ export const deleteElections = async (input: { ids: String[] }) => {
 
 const createCandidatesSQL = `
 UPDATE elections
-SET candidates = candidates || $2::JSONB
+SET date_updated = now() at time zone 'utc',
+candidates = candidates || $2::JSONB
 WHERE id = $1;
 `;
 

@@ -1,12 +1,6 @@
-import {
-  gql,
-  ValidationError,
-  AuthenticationError,
-  ForbiddenError,
-  UserInputError,
-} from 'apollo-server-core';
-import { IResolvers, TransformRootFields } from 'apollo-server';
-import { Context, context } from './context';
+import { gql, ForbiddenError, UserInputError } from 'apollo-server-core';
+import { IResolvers } from 'apollo-server';
+import { Context } from './context';
 import * as tokens from './tokens';
 import { getUsers, getUsersByEmail, createUser } from './db/user';
 import {
@@ -18,6 +12,8 @@ import {
   createCandidates,
   withNotFound,
   deleteCandidates,
+  ElectionStatus,
+  updateElection,
 } from './db/election';
 import * as lodash from 'lodash';
 const uuidv4 = require('uuid/v4');
@@ -32,7 +28,7 @@ export const schema = gql`
     # updateElection(input: UpdateElectionRequest): UpdateElectionResponse!
     addCandidates(input: AddCandidatesRequest): AddCandidatesResponse!
     removeCandidates(input: RemoveCandidatesRequest): RemoveCandidatesResponse!
-    # setStatus(input: SetStatusRequest): SetStatusResponse!
+    setStatus(input: SetStatusRequest): SetStatusResponse!
 
     #addRegistrations (this should probably be allowed in both PENDING and ACTIVE)
     #removeRegistrations (this should probably be allowed only in PENDING)
@@ -217,9 +213,8 @@ export const resolvers: IResolvers<any, Context> = {
         };
       }
     ) => {
-      console.log('create election request received');
       const { name, description, candidates, email } = args.input;
-      //TODO: validate input
+
       const errors: string[] = [];
       if (name === '') {
         errors.push('name is required');
@@ -239,10 +234,8 @@ export const resolvers: IResolvers<any, Context> = {
 
       const now = new Date().toISOString();
 
-      console.log(`looking up user by email ${email}...`);
       let [user] = await getUsersByEmail({ emails: [email] });
       if (!user) {
-        console.log(`couldn't find user with email ${email}, creating one...`);
         user = await createUser({
           user: { id: uuidv4(), email, date_created: now, type: 'WEAK' },
         });
@@ -305,6 +298,10 @@ export const resolvers: IResolvers<any, Context> = {
 
       const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
 
+      if (election.status != 'PENDING') {
+        throw new UserInputError('cannot change an election after it has begun');
+      }
+
       const dedupedCandidates = lodash
         .uniqBy(candidates, ({ name }) => name.toLowerCase())
         .filter(
@@ -324,6 +321,7 @@ export const resolvers: IResolvers<any, Context> = {
       });
       return { election: toApiElection(updatedElection) };
     },
+
     removeCandidates: async (
       _,
       args: { input: { electionId: string; candidateIds: string[] } },
@@ -332,6 +330,10 @@ export const resolvers: IResolvers<any, Context> = {
       const { electionId, candidateIds } = args.input;
 
       const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
+
+      if (election.status != 'PENDING') {
+        throw new UserInputError('cannot change an election after it has begun');
+      }
 
       if (candidateIds.length === 0) {
         return { election: toApiElection(election) };
@@ -344,6 +346,42 @@ export const resolvers: IResolvers<any, Context> = {
       const updatedElection = await deleteCandidates({
         electionId,
         candidateIds,
+      });
+      return { election: toApiElection(updatedElection) };
+    },
+
+    setStatus: async (
+      _,
+      args: { input: { electionId: string; status: ElectionStatus } },
+      { token }: Context
+    ) => {
+      const requestId = uuidv4();
+      const { electionId, status } = args.input;
+      console.log(`[${requestId}] [${electionId}] setStatus called with ${status}`);
+
+      const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
+      console.log(`[${requestId}] election.status = ${election.status}`);
+
+      if (election.status === status) {
+        return { election: toApiElection(election) };
+      }
+
+      //TODO: clean up this validation and make it data driven with good error messaging
+      if (election.status === 'PENDING' && status !== 'OPEN') {
+        console.log(`[${requestId}] failing`);
+        throw new UserInputError('invalid status transition');
+      }
+      if (election.status === 'OPEN' && status !== 'TALLYING') {
+        console.log(`[${requestId}] failing`);
+        throw new UserInputError('invalid status transition');
+      }
+
+      const updatedElection = await updateElection({
+        election: {
+          ...election,
+          status,
+          date_updated: new Date().toISOString(),
+        },
       });
       return { election: toApiElection(updatedElection) };
     },

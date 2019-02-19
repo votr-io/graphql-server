@@ -4,6 +4,7 @@
   "description": "",
   "main": "build/index.js",
   "scripts": {
+    "clean": "rm -r ./build",
     "download:schema": "apollo schema:download --endpoint http://localhost:5000/graphql ./src/generated/schema.json",
     "generate:client": "apollo client:codegen --endpoint http://localhost:5000/graphql --target=typescript --addTypename --outputFlat ./src/tests/generated/ --includes=src/tests/**/*.test.ts",
     "generate:serviceFactory": "apollo-client-codegen generate:serviceFactory --server=http://localhost:5000/graphql  --includes=./src/tests/**/*.gql --outputDir=./src/tests/generated",

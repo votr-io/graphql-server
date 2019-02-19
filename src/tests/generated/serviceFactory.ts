@@ -3,6 +3,7 @@
 import ApolloClient, { QueryOptions, MutationOptions } from 'apollo-client';
 import gql from 'graphql-tag';
 
+import { SetStatus, SetStatusVariables } from './SetStatus'
 import { AddCandidates, AddCandidatesVariables } from './AddCandidates'
 import { CreateElection, CreateElectionVariables } from './CreateElection'
 import { DeleteElection, DeleteElectionVariables } from './DeleteElection'
@@ -45,6 +46,14 @@ export function createService(client: ApolloClient<any>) {
     },
 
     
+    SetStatus: (variables: SetStatusVariables, options: Omit<MutationOptions<SetStatus, SetStatusVariables>, 'mutation' | 'variables'> = {}) => {
+      return client.mutate<SetStatus, SetStatusVariables>({
+        ...options,
+        mutation: SetStatusMutation,
+        variables
+      });
+    },
+
     AddCandidates: (variables: AddCandidatesVariables, options: Omit<MutationOptions<AddCandidates, AddCandidatesVariables>, 'mutation' | 'variables'> = {}) => {
       return client.mutate<AddCandidates, AddCandidatesVariables>({
         ...options,
@@ -89,6 +98,8 @@ export function createService(client: ApolloClient<any>) {
 }
 
 
+  export const SetStatusMutation = gql`mutation SetStatus($electionId:ID!,$status:ElectionStatus!){setStatus(input:{electionId:$electionId,status:$status}){__typename election{__typename adminToken candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
+  
   export const AddCandidatesMutation = gql`mutation AddCandidates($candidates:[CreateCandidateInput!]!,$electionId:ID!){addCandidates(input:{electionId:$electionId,candidates:$candidates}){__typename election{__typename adminToken candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
   
   export const CreateElectionMutation = gql`mutation CreateElection($candidates:[CreateCandidateInput!]!,$description:String!,$email:String,$name:String!){createElection(input:{name:$name,description:$description,candidates:$candidates,email:$email}){__typename election{__typename adminToken candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
