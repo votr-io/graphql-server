@@ -16,6 +16,7 @@ import {
   updateElection,
 } from './db/election';
 import * as lodash from 'lodash';
+import { QueryResolvers } from './generated/resolvers';
 const uuidv4 = require('uuid/v4');
 
 export const schema = gql`
@@ -177,8 +178,8 @@ export const schema = gql`
 `;
 
 export const resolvers: IResolvers<any, Context> = {
-  Query: {
-    getElections: async (_, args: { input: { ids: string[] } }) => {
+  Query: <QueryResolvers.Resolvers>{
+    getElections: async (_, args) => {
       const { ids } = args.input;
       /*
       TODO: Authorization.  only return if:
@@ -188,7 +189,9 @@ export const resolvers: IResolvers<any, Context> = {
       */
 
       const elections = await getElections({ ids });
-      return { elections: elections.map(toApiElection) };
+      // return { elections: elections.map(toApiElection) };
+      const ret: GetElectionsResponse = {};
+      return ret;
     },
   },
   Election: {
