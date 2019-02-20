@@ -16,7 +16,7 @@ import {
   updateElection,
 } from './db/election';
 import * as lodash from 'lodash';
-import { QueryResolvers } from './generated/resolvers';
+import { QueryResolvers, GetElectionsResponse } from './generated/resolvers';
 const uuidv4 = require('uuid/v4');
 
 export const schema = gql`
@@ -26,7 +26,7 @@ export const schema = gql`
   extend type Mutation {
     createElection(input: CreateElectionRequest!): CreateElectionResponse!
     deleteElections(input: DeleteElectionsRequest!): Boolean!
-    # updateElection(input: UpdateElectionRequest): UpdateElectionResponse!
+    updateElection(input: UpdateElectionRequest): UpdateElectionResponse!
     addCandidates(input: AddCandidatesRequest): AddCandidatesResponse!
     removeCandidates(input: RemoveCandidatesRequest): RemoveCandidatesResponse!
     setStatus(input: SetStatusRequest): SetStatusResponse!
@@ -67,7 +67,9 @@ export const schema = gql`
   TODO: add properties here like public/private, manual/scheduled start/end dates
   """
   input UpdateElectionRequest {
+    electionId: ID!
     name: String
+    description: String
   }
   type UpdateElectionResponse {
     election: Election!
@@ -178,7 +180,7 @@ export const schema = gql`
 `;
 
 export const resolvers: IResolvers<any, Context> = {
-  Query: <QueryResolvers.Resolvers>{
+  Query: {
     getElections: async (_, args) => {
       const { ids } = args.input;
       /*
@@ -189,9 +191,7 @@ export const resolvers: IResolvers<any, Context> = {
       */
 
       const elections = await getElections({ ids });
-      // return { elections: elections.map(toApiElection) };
-      const ret: GetElectionsResponse = {};
-      return ret;
+      return { elections: elections.map(toApiElection) };
     },
   },
   Election: {
@@ -217,6 +217,7 @@ export const resolvers: IResolvers<any, Context> = {
     ) => {
       const { name, description, candidates, email } = args.input;
 
+      //TODO: move this validation somewhere better
       const errors: string[] = [];
       if (name === '') {
         errors.push('name is required');
@@ -269,6 +270,32 @@ export const resolvers: IResolvers<any, Context> = {
           electionId: election.id,
         }),
       };
+    },
+
+    updateElection: async (
+      _,
+      args: { input: { electionId: string; name?: string; description?: string } },
+      { token }: Context
+    ) => {
+      const { electionId, name, description } = args.input;
+      const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
+
+      if (election.status != 'PENDING') {
+        throw new UserInputError('cannot change an election after it has begun');
+      }
+
+      const now = new Date().toISOString();
+
+      const updatedElection = await updateElection({
+        election: {
+          ...election,
+          date_updated: now,
+          name: name ? name : election.name,
+          description: description ? description : election.description,
+        },
+      });
+
+      return { election: toApiElection(updatedElection) };
     },
 
     deleteElections: async (
