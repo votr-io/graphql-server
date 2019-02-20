@@ -1,5 +1,5 @@
 import { gql, ForbiddenError, UserInputError } from 'apollo-server-core';
-import { IResolvers } from 'apollo-server';
+
 import { Context } from './context';
 import * as tokens from './tokens';
 import { getUsers, getUsersByEmail, createUser } from './db/user';
@@ -16,20 +16,20 @@ import {
   updateElection,
 } from './db/election';
 import * as lodash from 'lodash';
-import { QueryResolvers, GetElectionsResponse } from './generated/resolvers';
+import { IResolvers, ElectionStatusTransition } from './generated/resolvers';
 const uuidv4 = require('uuid/v4');
 
 export const schema = gql`
   extend type Query {
-    getElections(input: GetElectionsRequest!): GetElectionsResponse
+    getElections(input: GetElectionsRequest!): GetElectionsResponse!
   }
   extend type Mutation {
     createElection(input: CreateElectionRequest!): CreateElectionResponse!
     deleteElections(input: DeleteElectionsRequest!): Boolean!
-    updateElection(input: UpdateElectionRequest): UpdateElectionResponse!
-    addCandidates(input: AddCandidatesRequest): AddCandidatesResponse!
-    removeCandidates(input: RemoveCandidatesRequest): RemoveCandidatesResponse!
-    setStatus(input: SetStatusRequest): SetStatusResponse!
+    updateElection(input: UpdateElectionRequest!): UpdateElectionResponse!
+    addCandidates(input: AddCandidatesRequest!): AddCandidatesResponse!
+    removeCandidates(input: RemoveCandidatesRequest!): RemoveCandidatesResponse!
+    setStatus(input: SetStatusRequest!): SetStatusResponse!
 
     #addRegistrations (this should probably be allowed in both PENDING and ACTIVE)
     #removeRegistrations (this should probably be allowed only in PENDING)
@@ -179,7 +179,7 @@ export const schema = gql`
   }
 `;
 
-export const resolvers: IResolvers<any, Context> = {
+export const resolvers: IResolvers = {
   Query: {
     getElections: async (_, args) => {
       const { ids } = args.input;
@@ -191,16 +191,20 @@ export const resolvers: IResolvers<any, Context> = {
       */
 
       const elections = await getElections({ ids });
-      return { elections: elections.map(toApiElection) };
+
+      return { elections };
     },
   },
   Election: {
-    createdBy: async (election: Election) => {
+    createdBy: async election => {
       const [user] = await getUsers({ ids: [election.created_by] });
       return user;
     },
-    candidates: (election: Election) => {
+    candidates: election => {
       return shuffle(election.candidates);
+    },
+    statusTransitions: election => {
+      return election.status_transitions as ElectionStatusTransition[];
     },
   },
   Mutation: {
@@ -264,7 +268,7 @@ export const resolvers: IResolvers<any, Context> = {
       });
 
       return {
-        election: toApiElection(election),
+        election,
         adminToken: tokens.encryptAdminToken({
           userId: user.id,
           electionId: election.id,
@@ -295,7 +299,7 @@ export const resolvers: IResolvers<any, Context> = {
         },
       });
 
-      return { election: toApiElection(updatedElection) };
+      return { election };
     },
 
     deleteElections: async (
@@ -346,21 +350,17 @@ export const resolvers: IResolvers<any, Context> = {
         );
 
       if (dedupedCandidates.length == 0) {
-        return { election: toApiElection(election) };
+        return { election };
       }
 
       const updatedElection = await createCandidates({
         electionId,
         candidates: dedupedCandidates.map(candidate => ({ id: uuidv4(), ...candidate })),
       });
-      return { election: toApiElection(updatedElection) };
+      return { election: updatedElection };
     },
 
-    removeCandidates: async (
-      _,
-      args: { input: { electionId: string; candidateIds: string[] } },
-      { token }: Context
-    ) => {
+    removeCandidates: async (_, args, { token }: Context) => {
       const { electionId, candidateIds } = args.input;
 
       const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
@@ -370,7 +370,7 @@ export const resolvers: IResolvers<any, Context> = {
       }
 
       if (candidateIds.length === 0) {
-        return { election: toApiElection(election) };
+        return { election };
       }
 
       if (election.candidates.filter(({ id }) => !candidateIds.includes(id)).length < 2) {
@@ -381,7 +381,8 @@ export const resolvers: IResolvers<any, Context> = {
         electionId,
         candidateIds,
       });
-      return { election: toApiElection(updatedElection) };
+
+      return { election: updatedElection };
     },
 
     setStatus: async (
@@ -394,7 +395,7 @@ export const resolvers: IResolvers<any, Context> = {
       const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
 
       if (election.status === status) {
-        return { election: toApiElection(election) };
+        return { election };
       }
 
       //TODO: clean up this validation and make it data driven with good error messaging
@@ -414,7 +415,7 @@ export const resolvers: IResolvers<any, Context> = {
           status_transitions: [...election.status_transitions, { status, on: now }],
         },
       });
-      return { election: toApiElection(updatedElection) };
+      return { election: updatedElection };
     },
   },
 };
@@ -438,14 +439,6 @@ async function getElectionAndCheckPermissionsToUpdate(
 interface CreateCandidateInput {
   name: string;
   description: string;
-}
-
-function toApiElection(election: Election) {
-  return {
-    ...election,
-    dateUpdated: election.date_updated,
-    statusTransitions: election.status_transitions,
-  };
 }
 
 //https://bost.ocks.org/mike/shuffle/

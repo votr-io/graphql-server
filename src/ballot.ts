@@ -1,7 +1,7 @@
 import { gql, UserInputError } from 'apollo-server-core';
-import { IResolvers } from 'apollo-server';
+
 import { Context } from './context';
-import { MutationResolvers } from './generated/resolvers';
+import { IResolvers } from './generated/resolvers';
 
 import { getElection, withNotFound, createBallot } from './db/election';
 
@@ -16,8 +16,8 @@ export const schema = gql`
   }
 `;
 
-export const resolvers = {
-  Mutation: <MutationResolvers.Resolvers>{
+export const resolvers: IResolvers = {
+  Mutation: {
     castBallot: async (_, args) => {
       const { electionId, candidateIds } = args.input;
 

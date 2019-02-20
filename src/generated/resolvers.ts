@@ -23,6 +23,14 @@ export interface CreateCandidateInput {
 export interface DeleteElectionsRequest {
   ids: string[];
 }
+/** updateElection is used to modify an election when it is in the PENDING status. Once an election has entered any other status, it's configuration is frozen. TODO: add properties here like public/private, manual/scheduled start/end dates */
+export interface UpdateElectionRequest {
+  electionId: string;
+
+  name?: Maybe<string>;
+
+  description?: Maybe<string>;
+}
 
 export interface AddCandidatesRequest {
   electionId: string;
@@ -51,21 +59,17 @@ export interface SubmitBallotRequest {
 
   candidateIds: string[];
 }
-/** updateElection is used to modify an election when it is in the PENDING status. Once an election has entered any other status, it's configuration is frozen. TODO: add properties here like public/private, manual/scheduled start/end dates */
-export interface UpdateElectionRequest {
-  name?: Maybe<string>;
-}
 /** Possible statuses an election can be in. Transitions only go in one direction.  There's no going back. */
 export enum ElectionStatus {
-  Pending = "PENDING",
-  Open = "OPEN",
-  Tallying = "TALLYING",
-  Closed = "CLOSED"
+  Pending = 'PENDING',
+  Open = 'OPEN',
+  Tallying = 'TALLYING',
+  Closed = 'CLOSED',
 }
 
 export enum CacheControlScope {
-  Public = "PUBLIC",
-  Private = "PRIVATE"
+  Public = 'PUBLIC',
+  Private = 'PRIVATE',
 }
 
 /** The `Upload` scalar type represents a file upload. */
@@ -82,7 +86,7 @@ export type Upload = any;
 export interface Query {
   noop?: Maybe<boolean>;
 
-  getElections?: Maybe<GetElectionsResponse>;
+  getElections: GetElectionsResponse;
 }
 
 export interface GetElectionsResponse {
@@ -160,6 +164,8 @@ export interface Mutation {
 
   deleteElections: boolean;
 
+  updateElection: UpdateElectionResponse;
+
   addCandidates: AddCandidatesResponse;
 
   removeCandidates: RemoveCandidatesResponse;
@@ -175,6 +181,10 @@ export interface CreateElectionResponse {
   election: Election;
 
   adminToken?: Maybe<string>;
+}
+
+export interface UpdateElectionResponse {
+  election: Election;
 }
 
 export interface AddCandidatesResponse {
@@ -193,10 +203,6 @@ export interface WeakLoginResponse {
   accessToken: string;
 }
 
-export interface UpdateElectionResponse {
-  election: Election;
-}
-
 // ====================================================
 // Arguments
 // ====================================================
@@ -210,14 +216,17 @@ export interface CreateElectionMutationArgs {
 export interface DeleteElectionsMutationArgs {
   input: DeleteElectionsRequest;
 }
+export interface UpdateElectionMutationArgs {
+  input: UpdateElectionRequest;
+}
 export interface AddCandidatesMutationArgs {
-  input?: Maybe<AddCandidatesRequest>;
+  input: AddCandidatesRequest;
 }
 export interface RemoveCandidatesMutationArgs {
-  input?: Maybe<RemoveCandidatesRequest>;
+  input: RemoveCandidatesRequest;
 }
 export interface SetStatusMutationArgs {
-  input?: Maybe<SetStatusRequest>;
+  input: SetStatusRequest;
 }
 export interface WeakLoginMutationArgs {
   input: WeakLoginRequest;
@@ -226,11 +235,9 @@ export interface CastBallotMutationArgs {
   input: SubmitBallotRequest;
 }
 
-import {
-  GraphQLResolveInfo,
-  GraphQLScalarType,
-  GraphQLScalarTypeConfig
-} from "graphql";
+import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
+
+import { Election } from '../types';
 
 export type Resolver<Result, Parent = {}, Context = {}, Args = {}> = (
   parent: Parent,
@@ -254,15 +261,8 @@ export interface ISubscriptionResolverObject<Result, Parent, Context, Args> {
   ): R | Result | Promise<R | Result>;
 }
 
-export type SubscriptionResolver<
-  Result,
-  Parent = {},
-  Context = {},
-  Args = {}
-> =
-  | ((
-      ...args: any[]
-    ) => ISubscriptionResolverObject<Result, Parent, Context, Args>)
+export type SubscriptionResolver<Result, Parent = {}, Context = {}, Args = {}> =
+  | ((...args: any[]) => ISubscriptionResolverObject<Result, Parent, Context, Args>)
   | ISubscriptionResolverObject<Result, Parent, Context, Args>;
 
 export type TypeResolveFn<Types, Parent = {}, Context = {}> = (
@@ -285,20 +285,16 @@ export namespace QueryResolvers {
   export interface Resolvers<Context = {}, TypeParent = {}> {
     noop?: NoopResolver<Maybe<boolean>, TypeParent, Context>;
 
-    getElections?: GetElectionsResolver<
-      Maybe<GetElectionsResponse>,
-      TypeParent,
-      Context
-    >;
+    getElections?: GetElectionsResolver<GetElectionsResponse, TypeParent, Context>;
   }
 
-  export type NoopResolver<
-    R = Maybe<boolean>,
-    Parent = {},
-    Context = {}
-  > = Resolver<R, Parent, Context>;
+  export type NoopResolver<R = Maybe<boolean>, Parent = {}, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
   export type GetElectionsResolver<
-    R = Maybe<GetElectionsResponse>,
+    R = GetElectionsResponse,
     Parent = {},
     Context = {}
   > = Resolver<R, Parent, Context, GetElectionsArgs>;
@@ -344,31 +340,31 @@ export namespace ElectionResolvers {
     results?: ResultsResolver<Maybe<Results>, TypeParent, Context>;
   }
 
-  export type IdResolver<
-    R = string,
-    Parent = Election,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
-  export type NameResolver<
-    R = string,
-    Parent = Election,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
-  export type DescriptionResolver<
-    R = string,
-    Parent = Election,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
-  export type CreatedByResolver<
-    R = User,
-    Parent = Election,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
-  export type DateUpdatedResolver<
-    R = string,
-    Parent = Election,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
+  export type IdResolver<R = string, Parent = Election, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
+  export type NameResolver<R = string, Parent = Election, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
+  export type DescriptionResolver<R = string, Parent = Election, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
+  export type CreatedByResolver<R = User, Parent = Election, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
+  export type DateUpdatedResolver<R = string, Parent = Election, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
   export type CandidatesResolver<
     R = Candidate[],
     Parent = Election,
@@ -419,16 +415,16 @@ export namespace CandidateResolvers {
     description?: DescriptionResolver<Maybe<string>, TypeParent, Context>;
   }
 
-  export type IdResolver<
-    R = string,
-    Parent = Candidate,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
-  export type NameResolver<
-    R = string,
-    Parent = Candidate,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
+  export type IdResolver<R = string, Parent = Candidate, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
+  export type NameResolver<R = string, Parent = Candidate, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
   export type DescriptionResolver<
     R = Maybe<string>,
     Parent = Candidate,
@@ -437,10 +433,7 @@ export namespace CandidateResolvers {
 }
 /** Represents the dateTime an election moved into a specific status. */
 export namespace ElectionStatusTransitionResolvers {
-  export interface Resolvers<
-    Context = {},
-    TypeParent = ElectionStatusTransition
-  > {
+  export interface Resolvers<Context = {}, TypeParent = ElectionStatusTransition> {
     on?: OnResolver<string, TypeParent, Context>;
 
     status?: StatusResolver<ElectionStatus, TypeParent, Context>;
@@ -465,25 +458,21 @@ export namespace ResultsResolvers {
     replay?: ReplayResolver<Round[], TypeParent, Context>;
   }
 
-  export type WinnerResolver<
-    R = Candidate,
-    Parent = Results,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
-  export type ReplayResolver<
-    R = Round[],
-    Parent = Results,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
+  export type WinnerResolver<R = Candidate, Parent = Results, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
+  export type ReplayResolver<R = Round[], Parent = Results, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
 }
 /** Information about a specific round of an election. If this is the final round of the election, redistribution will be null, candidateTotals - the number of votes each candidate is awarded this round redistribution - the number of votes being redistributed to each candidate (does not include the last place candidate for this round) */
 export namespace RoundResolvers {
   export interface Resolvers<Context = {}, TypeParent = Round> {
-    candidateTotals?: CandidateTotalsResolver<
-      CandidateVotes[],
-      TypeParent,
-      Context
-    >;
+    candidateTotals?: CandidateTotalsResolver<CandidateVotes[], TypeParent, Context>;
 
     redistribution?: RedistributionResolver<
       Maybe<(Maybe<CandidateVotes>)[]>,
@@ -516,30 +505,24 @@ export namespace CandidateVotesResolvers {
     Parent = CandidateVotes,
     Context = {}
   > = Resolver<R, Parent, Context>;
-  export type VotesResolver<
-    R = number,
-    Parent = CandidateVotes,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
+  export type VotesResolver<R = number, Parent = CandidateVotes, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
 }
 
 export namespace MutationResolvers {
   export interface Resolvers<Context = {}, TypeParent = {}> {
     noop?: NoopResolver<Maybe<boolean>, TypeParent, Context>;
 
-    createElection?: CreateElectionResolver<
-      CreateElectionResponse,
-      TypeParent,
-      Context
-    >;
+    createElection?: CreateElectionResolver<CreateElectionResponse, TypeParent, Context>;
 
     deleteElections?: DeleteElectionsResolver<boolean, TypeParent, Context>;
 
-    addCandidates?: AddCandidatesResolver<
-      AddCandidatesResponse,
-      TypeParent,
-      Context
-    >;
+    updateElection?: UpdateElectionResolver<UpdateElectionResponse, TypeParent, Context>;
+
+    addCandidates?: AddCandidatesResolver<AddCandidatesResponse, TypeParent, Context>;
 
     removeCandidates?: RemoveCandidatesResolver<
       RemoveCandidatesResponse,
@@ -554,11 +537,11 @@ export namespace MutationResolvers {
     castBallot?: CastBallotResolver<boolean, TypeParent, Context>;
   }
 
-  export type NoopResolver<
-    R = Maybe<boolean>,
-    Parent = {},
-    Context = {}
-  > = Resolver<R, Parent, Context>;
+  export type NoopResolver<R = Maybe<boolean>, Parent = {}, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context
+  >;
   export type CreateElectionResolver<
     R = CreateElectionResponse,
     Parent = {},
@@ -568,13 +551,23 @@ export namespace MutationResolvers {
     input: CreateElectionRequest;
   }
 
-  export type DeleteElectionsResolver<
-    R = boolean,
-    Parent = {},
-    Context = {}
-  > = Resolver<R, Parent, Context, DeleteElectionsArgs>;
+  export type DeleteElectionsResolver<R = boolean, Parent = {}, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context,
+    DeleteElectionsArgs
+  >;
   export interface DeleteElectionsArgs {
     input: DeleteElectionsRequest;
+  }
+
+  export type UpdateElectionResolver<
+    R = UpdateElectionResponse,
+    Parent = {},
+    Context = {}
+  > = Resolver<R, Parent, Context, UpdateElectionArgs>;
+  export interface UpdateElectionArgs {
+    input: UpdateElectionRequest;
   }
 
   export type AddCandidatesResolver<
@@ -583,7 +576,7 @@ export namespace MutationResolvers {
     Context = {}
   > = Resolver<R, Parent, Context, AddCandidatesArgs>;
   export interface AddCandidatesArgs {
-    input?: Maybe<AddCandidatesRequest>;
+    input: AddCandidatesRequest;
   }
 
   export type RemoveCandidatesResolver<
@@ -592,7 +585,7 @@ export namespace MutationResolvers {
     Context = {}
   > = Resolver<R, Parent, Context, RemoveCandidatesArgs>;
   export interface RemoveCandidatesArgs {
-    input?: Maybe<RemoveCandidatesRequest>;
+    input: RemoveCandidatesRequest;
   }
 
   export type SetStatusResolver<
@@ -601,7 +594,7 @@ export namespace MutationResolvers {
     Context = {}
   > = Resolver<R, Parent, Context, SetStatusArgs>;
   export interface SetStatusArgs {
-    input?: Maybe<SetStatusRequest>;
+    input: SetStatusRequest;
   }
 
   export type WeakLoginResolver<
@@ -613,21 +606,19 @@ export namespace MutationResolvers {
     input: WeakLoginRequest;
   }
 
-  export type CastBallotResolver<
-    R = boolean,
-    Parent = {},
-    Context = {}
-  > = Resolver<R, Parent, Context, CastBallotArgs>;
+  export type CastBallotResolver<R = boolean, Parent = {}, Context = {}> = Resolver<
+    R,
+    Parent,
+    Context,
+    CastBallotArgs
+  >;
   export interface CastBallotArgs {
     input: SubmitBallotRequest;
   }
 }
 
 export namespace CreateElectionResponseResolvers {
-  export interface Resolvers<
-    Context = {},
-    TypeParent = CreateElectionResponse
-  > {
+  export interface Resolvers<Context = {}, TypeParent = CreateElectionResponse> {
     election?: ElectionResolver<Election, TypeParent, Context>;
 
     adminToken?: AdminTokenResolver<Maybe<string>, TypeParent, Context>;
@@ -645,6 +636,18 @@ export namespace CreateElectionResponseResolvers {
   > = Resolver<R, Parent, Context>;
 }
 
+export namespace UpdateElectionResponseResolvers {
+  export interface Resolvers<Context = {}, TypeParent = UpdateElectionResponse> {
+    election?: ElectionResolver<Election, TypeParent, Context>;
+  }
+
+  export type ElectionResolver<
+    R = Election,
+    Parent = UpdateElectionResponse,
+    Context = {}
+  > = Resolver<R, Parent, Context>;
+}
+
 export namespace AddCandidatesResponseResolvers {
   export interface Resolvers<Context = {}, TypeParent = AddCandidatesResponse> {
     election?: ElectionResolver<Election, TypeParent, Context>;
@@ -658,10 +661,7 @@ export namespace AddCandidatesResponseResolvers {
 }
 
 export namespace RemoveCandidatesResponseResolvers {
-  export interface Resolvers<
-    Context = {},
-    TypeParent = RemoveCandidatesResponse
-  > {
+  export interface Resolvers<Context = {}, TypeParent = RemoveCandidatesResponse> {
     election?: ElectionResolver<Election, TypeParent, Context>;
   }
 
@@ -692,21 +692,6 @@ export namespace WeakLoginResponseResolvers {
   export type AccessTokenResolver<
     R = string,
     Parent = WeakLoginResponse,
-    Context = {}
-  > = Resolver<R, Parent, Context>;
-}
-
-export namespace UpdateElectionResponseResolvers {
-  export interface Resolvers<
-    Context = {},
-    TypeParent = UpdateElectionResponse
-  > {
-    election?: ElectionResolver<Election, TypeParent, Context>;
-  }
-
-  export type ElectionResolver<
-    R = Election,
-    Parent = UpdateElectionResponse,
     Context = {}
   > = Resolver<R, Parent, Context>;
 }
@@ -755,9 +740,8 @@ export interface DeprecatedDirectiveArgs {
   reason?: string;
 }
 
-export interface UploadScalarConfig
-  extends GraphQLScalarTypeConfig<Upload, any> {
-  name: "Upload";
+export interface UploadScalarConfig extends GraphQLScalarTypeConfig<Upload, any> {
+  name: 'Upload';
 }
 
 export interface IResolvers<Context = {}> {
@@ -766,21 +750,17 @@ export interface IResolvers<Context = {}> {
   Election?: ElectionResolvers.Resolvers<Context>;
   User?: UserResolvers.Resolvers<Context>;
   Candidate?: CandidateResolvers.Resolvers<Context>;
-  ElectionStatusTransition?: ElectionStatusTransitionResolvers.Resolvers<
-    Context
-  >;
+  ElectionStatusTransition?: ElectionStatusTransitionResolvers.Resolvers<Context>;
   Results?: ResultsResolvers.Resolvers<Context>;
   Round?: RoundResolvers.Resolvers<Context>;
   CandidateVotes?: CandidateVotesResolvers.Resolvers<Context>;
   Mutation?: MutationResolvers.Resolvers<Context>;
   CreateElectionResponse?: CreateElectionResponseResolvers.Resolvers<Context>;
+  UpdateElectionResponse?: UpdateElectionResponseResolvers.Resolvers<Context>;
   AddCandidatesResponse?: AddCandidatesResponseResolvers.Resolvers<Context>;
-  RemoveCandidatesResponse?: RemoveCandidatesResponseResolvers.Resolvers<
-    Context
-  >;
+  RemoveCandidatesResponse?: RemoveCandidatesResponseResolvers.Resolvers<Context>;
   SetStatusResponse?: SetStatusResponseResolvers.Resolvers<Context>;
   WeakLoginResponse?: WeakLoginResponseResolvers.Resolvers<Context>;
-  UpdateElectionResponse?: UpdateElectionResponseResolvers.Resolvers<Context>;
   Upload?: GraphQLScalarType;
 }
 

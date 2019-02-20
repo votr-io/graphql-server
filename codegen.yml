@@ -2,6 +2,9 @@ schema: http://localhost:5000/graphql
 overwrite: true
 generates:
   ./src/generated/resolvers.ts:
+    config:
+      mappers:
+        Election: ./src/types#Election
     plugins:
       - typescript-common
       - typescript-server
