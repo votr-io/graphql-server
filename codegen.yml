@@ -1,0 +1,10 @@
+schema: http://localhost:5000/graphql
+overwrite: true
+generates:
+  ./src/generated/resolvers.ts:
+    plugins:
+      - typescript-common
+      - typescript-server
+      - typescript-resolvers
+require:
+  - ts-node/register

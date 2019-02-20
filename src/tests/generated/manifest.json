@@ -51,6 +51,13 @@
       }
     },
     {
+      "signature": "089c47dc36e09afe4cf4762ae1ac3239cd20625cdf4ed529a40685d5bd49977a",
+      "document": "mutation UpdateElection($description:String,$electionId:ID!,$name:String){updateElection(input:{electionId:$electionId,name:$name,description:$description}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}",
+      "metadata": {
+        "engineSignature": "mutation UpdateElection($description:String,$electionId:ID!,$name:String){updateElection(input:{}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}"
+      }
+    },
+    {
       "signature": "b965ad18addfff7c2b1ed5f3c8d4f7295141d578a11e32866fe0ec2447ea6cf6",
       "document": "mutation WeakLogin($adminToken:String!){weakLogin(input:{adminToken:$adminToken}){__typename accessToken}}",
       "metadata": {

@@ -1,6 +1,7 @@
 import { gql, UserInputError } from 'apollo-server-core';
 import { IResolvers } from 'apollo-server';
 import { Context } from './context';
+import { MutationResolvers } from './generated/resolvers';
 
 import { getElection, withNotFound, createBallot } from './db/election';
 
@@ -15,17 +16,9 @@ export const schema = gql`
   }
 `;
 
-export const resolvers: IResolvers<any, Context> = {
-  Mutation: {
-    castBallot: async (
-      _,
-      args: {
-        input: {
-          electionId: string;
-          candidateIds: string[];
-        };
-      }
-    ) => {
+export const resolvers = {
+  Mutation: <MutationResolvers.Resolvers>{
+    castBallot: async (_, args) => {
       const { electionId, candidateIds } = args.input;
 
       if (candidateIds.length === 0) {
@@ -61,6 +54,7 @@ export const resolvers: IResolvers<any, Context> = {
         electionId,
         candidateIndexes: candidateIds.map(id => candidateIdToIndex[id]),
       });
+
       return true;
     },
   },
