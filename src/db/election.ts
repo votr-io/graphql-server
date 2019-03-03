@@ -50,8 +50,9 @@ export const createElection = async (input: {
 export const updateElection = async (input: {
   election: Election;
 }): Promise<Election> => {
-  const query = `UPDATE elections SET name = $(name), description = $(description), date_updated = $(date_updated), status = $(status) WHERE id = $(id)`;
-  await db.none(query, input.election);
+  const { election } = input;
+  const query = `UPDATE elections SET name = $(name), description = $(description), date_updated = $(date_updated), status = $(status), results = $(results) WHERE id = $(id)`;
+  await db.none(query, { ...election, results: JSON.stringify(election.results) });
   return input.election;
 };
 
