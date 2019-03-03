@@ -4,7 +4,6 @@ import { Context } from './context';
 import * as tokens from './tokens';
 import { getUsers, getUsersByEmail, createUser } from './db/user';
 import {
-  Election,
   getElections,
   createElection,
   deleteElections,
@@ -12,12 +11,12 @@ import {
   createCandidates,
   withNotFound,
   deleteCandidates,
-  ElectionStatus,
   updateElection,
 } from './db/election';
 import * as lodash from 'lodash';
-import { IResolvers, ElectionStatusTransition } from './generated/resolvers';
+import { IResolvers, ElectionStatusTransition, Candidate } from './generated/resolvers';
 import { tallyElection } from './tallyElection';
+import { ElectionStatus, Election } from './types';
 const uuidv4 = require('uuid/v4');
 
 export const schema = gql`
@@ -206,6 +205,31 @@ export const resolvers: IResolvers = {
     },
     statusTransitions: election => {
       return election.status_transitions as ElectionStatusTransition[];
+    },
+    results: ({ results, candidates }) => {
+      //helper function to resolve votes by candidate_id into fully formed Candidates
+      //doing this here rather than it's own resolver because we need the Candidates[] off the election
+      function resolveCandidateVotes(
+        candidate_totals: { candidate_id: string; votes: number }[],
+        candidates: Candidate[]
+      ) {
+        return candidate_totals.map(({ candidate_id, votes }) => ({
+          candidate: candidates.find(({ id }) => id === candidate_id),
+          votes,
+        }));
+      }
+
+      return {
+        winner: candidates.find(({ id }) => id === results.winner),
+        replay: results.replay.map(({ candidate_totals, redistribution }) => {
+          return {
+            candidateTotals: resolveCandidateVotes(candidate_totals, candidates),
+            redistribution: redistribution
+              ? resolveCandidateVotes(redistribution, candidates)
+              : undefined,
+          };
+        }),
+      };
     },
   },
   Mutation: {

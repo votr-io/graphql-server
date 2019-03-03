@@ -1,7 +1,6 @@
 import { createUser, getUsers, deleteUsers } from './db/user';
 import {
   createElection,
-  Election,
   getElections,
   deleteCandidates,
   createCandidates,

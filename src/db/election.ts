@@ -4,38 +4,39 @@ import { isObject } from 'util';
 import { UserInputError } from 'apollo-server';
 import { Observable } from 'rxjs';
 import * as QueryStream from 'pg-query-stream';
+import { Election } from '../types';
 
-export interface Election {
-  id: string;
-  name: string;
-  description: string;
-  created_by: string;
-  date_created: string;
-  date_updated: string;
-  candidates: {
-    id: string;
-    name: string;
-    description: string;
-  }[];
-  status: ElectionStatus;
-  status_transitions: { on: string; status: ElectionStatus }[];
-  results?: Results;
-}
+// export interface Election {
+//   id: string;
+//   name: string;
+//   description: string;
+//   created_by: string;
+//   date_created: string;
+//   date_updated: string;
+//   candidates: {
+//     id: string;
+//     name: string;
+//     description: string;
+//   }[];
+//   status: ElectionStatus;
+//   status_transitions: { on: string; status: ElectionStatus }[];
+//   results?: Results;
+// }
 
-export interface Results {
-  winner: string;
-  replay: {
-    candidate_totals: CandidateVotes[];
-    redistribution: CandidateVotes[];
-  }[];
-}
+// export interface Results {
+//   winner: string;
+//   replay: {
+//     candidate_totals: CandidateVotes[];
+//     redistribution: CandidateVotes[];
+//   }[];
+// }
 
-export type ElectionStatus = 'PENDING' | 'OPEN' | 'TALLYING' | 'CLOSED';
+// export type ElectionStatus = 'PENDING' | 'OPEN' | 'TALLYING' | 'CLOSED';
 
-export interface CandidateVotes {
-  candidate_id: string;
-  votes: number;
-}
+// export interface CandidateVotes {
+//   candidate_id: string;
+//   votes: number;
+// }
 
 export const createElection = async (input: {
   election: Election;

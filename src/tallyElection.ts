@@ -1,5 +1,6 @@
-import { observeBallots, Results } from './db/election';
+import { observeBallots } from './db/election';
 import { getResults, ElectionResults } from 'alt-vote';
+import { Results } from './types';
 
 export async function tallyElection(electionId: string) {
   console.log('tallyElection called...');
