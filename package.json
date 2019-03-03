@@ -11,7 +11,7 @@
     "generate": "gql-gen",
     "makeDevData": "ts-node ./src/tests/scripts/makeDevElections.ts",
     "test": "jest",
-    "dev": "ts-node-dev --respawn src/index.ts",
+    "dev": "ts-node-dev src/index.ts --respawn",
     "postinstall": "npm run build",
     "build": "tsc && npm run migrate",
     "migrate": "db-migrate reset && db-migrate up",
@@ -22,6 +22,7 @@
   "dependencies": {
     "@types/graphql": "^14.0.7",
     "@types/pg": "^7.4.12",
+    "alt-vote": "0.0.1",
     "apollo-cache-inmemory": "^1.4.2",
     "apollo-client": "^2.4.12",
     "apollo-client-codegen": "0.0.7",
@@ -39,6 +40,8 @@
     "node-fetch": "^2.3.0",
     "pg": "^7.8.0",
     "pg-promise": "^8.5.5",
+    "pg-query-stream": "^2.0.0",
+    "rxjs": "^6.4.0",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
@@ -48,6 +51,7 @@
     "@types/lodash": "^4.14.120",
     "@types/node-fetch": "^2.1.6",
     "@types/pg-promise": "^5.4.3",
+    "@types/pg-query-stream": "^1.0.2",
     "@types/uuid": "^3.4.4",
     "apollo": "^2.4.4",
     "graphql-code-generator": "^0.16.1",
@@ -55,6 +59,7 @@
     "graphql-codegen-typescript-resolvers": "^0.16.1",
     "graphql-codegen-typescript-server": "^0.16.1",
     "jest": "^24.1.0",
+    "nodemon": "^1.18.10",
     "ts-jest": "^24.0.0",
     "ts-node-dev": "^1.0.0-pre.32",
     "typescript": "^3.3.3"

@@ -299,7 +299,7 @@ export const resolvers: IResolvers = {
         },
       });
 
-      return { election };
+      return { election: updatedElection };
     },
 
     deleteElections: async (

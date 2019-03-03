@@ -5,13 +5,19 @@ import {
   getElections,
   deleteCandidates,
   createCandidates,
+  observeBallots,
 } from './db/election';
 import * as express from 'express';
-import { ApolloServer, gql } from 'apollo-server-express';
+import { ApolloServer } from 'apollo-server-express';
 import * as cors from 'cors';
 import { ENV } from './env';
 import { typeDefs, resolvers } from './schemaAndResolvers';
 import { context } from './context';
+import { getResults } from 'alt-vote';
+
+// getResults({
+//   fetchBallots: () => observeBallots('5380dac6-a88a-4116-9373-05f6fe93fba2'),
+// }).then(console.log);
 
 // const electionId = 'efe98d33-1515-4832-a514-c07a8928f8e5';
 // const candidateIds = [
