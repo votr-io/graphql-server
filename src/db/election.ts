@@ -19,13 +19,15 @@ export interface Election {
   }[];
   status: ElectionStatus;
   status_transitions: { on: string; status: ElectionStatus }[];
-  results?: {
-    winner: string;
-    replay: {
-      candidate_totals: CandidateVotes[];
-      redistribution: CandidateVotes[];
-    }[];
-  };
+  results?: Results;
+}
+
+export interface Results {
+  winner: string;
+  replay: {
+    candidate_totals: CandidateVotes[];
+    redistribution: CandidateVotes[];
+  }[];
 }
 
 export type ElectionStatus = 'PENDING' | 'OPEN' | 'TALLYING' | 'CLOSED';

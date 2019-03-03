@@ -17,6 +17,7 @@ import {
 } from './db/election';
 import * as lodash from 'lodash';
 import { IResolvers, ElectionStatusTransition } from './generated/resolvers';
+import { tallyElection } from './tallyElection';
 const uuidv4 = require('uuid/v4');
 
 export const schema = gql`
@@ -415,6 +416,12 @@ export const resolvers: IResolvers = {
           status_transitions: [...election.status_transitions, { status, on: now }],
         },
       });
+
+      //TODO: move this someplace else and handle tallying failure
+      if (updatedElection.status === 'TALLYING') {
+        tallyElection(election.id);
+      }
+
       return { election: updatedElection };
     },
   },

@@ -14,10 +14,13 @@ import { ENV } from './env';
 import { typeDefs, resolvers } from './schemaAndResolvers';
 import { context } from './context';
 import { getResults } from 'alt-vote';
+import { tallyElection } from './tallyElection';
 
 // getResults({
 //   fetchBallots: () => observeBallots('5380dac6-a88a-4116-9373-05f6fe93fba2'),
 // }).then(console.log);
+
+tallyElection('5380dac6-a88a-4116-9373-05f6fe93fba2');
 
 // const electionId = 'efe98d33-1515-4832-a514-c07a8928f8e5';
 // const candidateIds = [
