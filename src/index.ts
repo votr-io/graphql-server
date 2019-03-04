@@ -5,6 +5,7 @@ import {
   deleteCandidates,
   createCandidates,
   observeBallots,
+  getElection,
 } from './db/election';
 import * as express from 'express';
 import { ApolloServer } from 'apollo-server-express';
@@ -19,7 +20,9 @@ import { tallyElection } from './tallyElection';
 //   fetchBallots: () => observeBallots('5380dac6-a88a-4116-9373-05f6fe93fba2'),
 // }).then(console.log);
 
-tallyElection('5380dac6-a88a-4116-9373-05f6fe93fba2');
+// getElection('5380dac6-a88a-4116-9373-05f6fe93fba2').then(election =>
+//   console.log(JSON.stringify(election, null, 2))
+// );
 
 // const electionId = 'efe98d33-1515-4832-a514-c07a8928f8e5';
 // const candidateIds = [

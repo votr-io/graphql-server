@@ -124,7 +124,7 @@ export function createService(client: ApolloClient<any>) {
   
   export const DeleteElectionMutation = gql`mutation DeleteElection($id:ID!){deleteElections(input:{ids:[$id]})}`
   
-  export const GetElectionsQuery = gql`query GetElections($ids:[ID!]!){getElections(input:{ids:$ids}){__typename elections{__typename id}}}`
+  export const GetElectionsQuery = gql`query GetElections($ids:[ID!]!){getElections(input:{ids:$ids}){__typename elections{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
   
   export const RemoveCandidatesMutation = gql`mutation RemoveCandidates($candidateIds:[ID!]!,$electionId:ID!){removeCandidates(input:{electionId:$electionId,candidateIds:$candidateIds}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
   

@@ -3,8 +3,6 @@ import { getResults, ElectionResults } from 'alt-vote';
 import { Results } from './types';
 
 export async function tallyElection(electionId: string) {
-  console.log('tallyElection called...');
-
   //get the election
   const election = await getElection(electionId);
   if (election.status !== 'TALLYING') {
@@ -16,16 +14,21 @@ export async function tallyElection(electionId: string) {
     console.log(JSON.stringify(election, null, 2));
     return;
   }
+  let results;
+  try {
+    results = await getResults({
+      fetchBallots: () => observeBallots(electionId),
+    });
+  } catch (e) {
+    console.log(e);
+  }
+  if (results) election.results = transformResults(results);
 
-  const results = await getResults({
-    fetchBallots: () => observeBallots(electionId),
-  });
-  election.results = transformResults(results);
   election.status = 'CLOSED';
-
+  console.log(`[${election.id}] saving results and moving status to closed`);
   await updateElection({ election });
-  const updatedElection = await getElection(electionId);
-  console.log(JSON.stringify(updatedElection, null, 2));
+  // const updatedElection = await getElection(electionId);
+  // console.log(JSON.stringify(updatedElection, null, 2));
 }
 
 function transformResults({ winner, rounds }: ElectionResults): Results {

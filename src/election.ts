@@ -207,6 +207,7 @@ export const resolvers: IResolvers = {
       return election.status_transitions as ElectionStatusTransition[];
     },
     results: ({ results, candidates }) => {
+      if (!results) return undefined;
       //helper function to resolve votes by candidate_id into fully formed Candidates
       //doing this here rather than it's own resolver because we need the Candidates[] off the election
       function resolveCandidateVotes(
@@ -443,7 +444,7 @@ export const resolvers: IResolvers = {
 
       //TODO: move this someplace else and handle tallying failure
       if (updatedElection.status === 'TALLYING') {
-        tallyElection(election.id);
+        await tallyElection(election.id);
       }
 
       return { election: updatedElection };

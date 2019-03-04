@@ -30,10 +30,10 @@
       }
     },
     {
-      "signature": "bc225a4e77d0a9c56e9efb860be088a5b9271bcfd99783ee577be4c417eca508",
-      "document": "query GetElections($ids:[ID!]!){getElections(input:{ids:$ids}){__typename elections{__typename id}}}",
+      "signature": "bda7d6cef00c1fd315d5bbbd30587c65ef650e45a3da0aa017fbd03236dc6ce7",
+      "document": "query GetElections($ids:[ID!]!){getElections(input:{ids:$ids}){__typename elections{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}",
       "metadata": {
-        "engineSignature": "query GetElections($ids:[ID!]!){getElections(input:{}){__typename elections{__typename id}}}"
+        "engineSignature": "query GetElections($ids:[ID!]!){getElections(input:{}){__typename elections{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}"
       }
     },
     {
