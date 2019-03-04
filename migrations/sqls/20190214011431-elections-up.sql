@@ -20,7 +20,8 @@ CREATE TABLE elections (
     date_updated TIMESTAMP WITH TIME ZONE DEFAULT(now() at time zone 'utc'),
     candidates jsonb NOT NULL,
     status election_status NOT NULL,
-    status_transitions jsonb NOT NULL
+    status_transitions jsonb NOT NULL,
+    results jsonb
 );
 
 CREATE TABLE ballots (
