@@ -1,7 +1,7 @@
 /* tslint:disable */
 // This file was automatically generated and should not be edited.
 
-import { ElectionStatus } from "./globalTypes";
+import { CreateCandidateInput, ElectionStatus } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: UpdateElection
@@ -62,4 +62,5 @@ export interface UpdateElectionVariables {
   electionId: string;
   name?: string | null;
   description?: string | null;
+  candidates?: CreateCandidateInput[] | null;
 }

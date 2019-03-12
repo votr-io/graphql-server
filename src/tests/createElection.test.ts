@@ -124,10 +124,49 @@ const validationTestCases: ValidationTest[] = [
     },
     expectedError: 'at least two candidates',
   },
+  {
+    input: {
+      name: 'this sure is an election',
+      description: 'jkl',
+      email: 'test@fake.com',
+      candidates: [{ name: 'Tiger' }, { name: 'Tiger' }],
+    },
+    expectedError: 'duplicate',
+  },
+  {
+    input: {
+      name: 'this sure is an election',
+      description: 'jkl',
+      email: 'test@fake.com',
+      candidates: [{ name: 'Tiger' }, { name: 'tIger' }],
+    },
+    expectedError: 'duplicate',
+  },
+  {
+    input: {
+      name: 'this sure is an election',
+      description: 'jkl',
+      email: 'test@fake.com',
+      candidates: [{ id: '1', name: 'Tiger' }, { id: '1', name: 'Gorilla' }],
+    },
+    expectedError: 'duplicate',
+  },
 ];
 
 test('validation', async () => {
   validationTestCases.forEach(async ({ input, expectedError }) => {
     await expect(baseService.CreateElection(input)).rejects.toThrowError(expectedError);
   });
+});
+
+test('provide candidate ids', async () => {
+  const res = await baseService.CreateElection({
+    name: 'provide candidate ids test',
+    description: '',
+    email: 'test@fake.com',
+    candidates: [{ id: '1', name: 'one' }, { id: '2', name: 'two' }],
+  });
+  const { candidates } = res.data.createElection.election;
+  expect(candidates.find(({ id }) => id === '1').name).toBe('one');
+  expect(candidates.find(({ id }) => id === '2').name).toBe('two');
 });

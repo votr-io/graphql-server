@@ -17,6 +17,7 @@ export enum ElectionStatus {
 }
 
 export interface CreateCandidateInput {
+  id?: string | null;
   name: string;
   description?: string | null;
 }

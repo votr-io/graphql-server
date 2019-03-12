@@ -15,6 +15,8 @@ export interface CreateElectionRequest {
 }
 
 export interface CreateCandidateInput {
+  id?: Maybe<string>;
+
   name: string;
 
   description?: Maybe<string>;
@@ -30,6 +32,8 @@ export interface UpdateElectionRequest {
   name?: Maybe<string>;
 
   description?: Maybe<string>;
+
+  candidates?: Maybe<CreateCandidateInput[]>;
 }
 
 export interface AddCandidatesRequest {

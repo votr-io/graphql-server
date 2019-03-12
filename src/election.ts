@@ -49,6 +49,7 @@ export const schema = gql`
     email: String
   }
   input CreateCandidateInput {
+    id: ID
     name: String!
     description: String
   }
@@ -70,6 +71,7 @@ export const schema = gql`
     electionId: ID!
     name: String
     description: String
+    candidates: [CreateCandidateInput!]
   }
   type UpdateElectionResponse {
     election: Election!
@@ -234,17 +236,7 @@ export const resolvers: IResolvers = {
     },
   },
   Mutation: {
-    createElection: async (
-      _,
-      args: {
-        input: {
-          name: string;
-          description: string;
-          candidates: CreateCandidateInput[];
-          email: string;
-        };
-      }
-    ) => {
+    createElection: async (_, args) => {
       const { name, description, candidates, email } = args.input;
 
       //TODO: move this validation somewhere better
@@ -252,7 +244,7 @@ export const resolvers: IResolvers = {
       if (name === '') {
         errors.push('name is required');
       }
-      if (email === '') {
+      if (email == null || email === '') {
         errors.push('email is required if you do not have an account');
       }
       if (candidates.length < 2) {
@@ -260,6 +252,23 @@ export const resolvers: IResolvers = {
       }
       if (candidates.filter(({ name }) => name === '').length !== 0) {
         errors.push('candidate.name is required');
+      }
+      if (
+        lodash(candidates)
+          .filter(({ id }) => id != null)
+          .uniqBy(({ id }) => id.toLowerCase())
+          .value().length !=
+        lodash(candidates)
+          .filter(({ id }) => id != null)
+          .value().length
+      ) {
+        errors.push('candidates cannot have duplicate ods');
+      }
+      if (
+        lodash.uniqBy(candidates, ({ name }) => name.toLowerCase()).length !=
+        candidates.length
+      ) {
+        errors.push('candidates cannot have duplicate names');
       }
       if (errors.length > 0) {
         throw new UserInputError(`createElection error: ${errors.join(', ')}`);
@@ -282,7 +291,11 @@ export const resolvers: IResolvers = {
           created_by: user.id,
           date_created: now,
           date_updated: now,
-          candidates: candidates.map(candidate => ({ id: uuidv4(), ...candidate })),
+          candidates: candidates.map(({ id, name, description }) => ({
+            id: id ? id : uuidv4(),
+            name,
+            description: description ? description : '',
+          })),
           status: 'PENDING',
           status_transitions: [
             {
@@ -302,12 +315,8 @@ export const resolvers: IResolvers = {
       };
     },
 
-    updateElection: async (
-      _,
-      args: { input: { electionId: string; name?: string; description?: string } },
-      { token }: Context
-    ) => {
-      const { electionId, name, description } = args.input;
+    updateElection: async (_, args, { token }: Context) => {
+      const { electionId, name, description, candidates } = args.input;
       const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
 
       if (election.status != 'PENDING') {
@@ -322,6 +331,13 @@ export const resolvers: IResolvers = {
           date_updated: now,
           name: name ? name : election.name,
           description: description ? description : election.description,
+          candidates: candidates
+            ? candidates.map(({ id, name, description }) => ({
+                id: id ? id : uuidv4(),
+                name,
+                description: description ? description : '',
+              }))
+            : election.candidates,
         },
       });
 
@@ -353,11 +369,7 @@ export const resolvers: IResolvers = {
       return true;
     },
 
-    addCandidates: async (
-      _,
-      args: { input: { electionId: string; candidates: CreateCandidateInput[] } },
-      { token }: Context
-    ) => {
+    addCandidates: async (_, args, { token }: Context) => {
       const { electionId, candidates } = args.input;
 
       const election = await getElectionAndCheckPermissionsToUpdate(token, electionId);
@@ -466,11 +478,6 @@ async function getElectionAndCheckPermissionsToUpdate(
   }
 
   return election;
-}
-
-interface CreateCandidateInput {
-  name: string;
-  description: string;
 }
 
 //https://bost.ocks.org/mike/shuffle/

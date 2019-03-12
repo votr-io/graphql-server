@@ -51,8 +51,12 @@ export const updateElection = async (input: {
   election: Election;
 }): Promise<Election> => {
   const { election } = input;
-  const query = `UPDATE elections SET name = $(name), description = $(description), date_updated = $(date_updated), status = $(status), results = $(results) WHERE id = $(id)`;
-  await db.none(query, { ...election, results: JSON.stringify(election.results) });
+  const query = `UPDATE elections SET name = $(name), description = $(description), date_updated = $(date_updated), status = $(status), results = $(results), candidates = $(candidates) WHERE id = $(id)`;
+  await db.none(query, {
+    ...election,
+    candidates: JSON.stringify(election.candidates),
+    results: JSON.stringify(election.results),
+  });
   return input.election;
 };
 

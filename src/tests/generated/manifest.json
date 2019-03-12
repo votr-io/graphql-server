@@ -51,10 +51,10 @@
       }
     },
     {
-      "signature": "089c47dc36e09afe4cf4762ae1ac3239cd20625cdf4ed529a40685d5bd49977a",
-      "document": "mutation UpdateElection($description:String,$electionId:ID!,$name:String){updateElection(input:{electionId:$electionId,name:$name,description:$description}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}",
+      "signature": "307abf6d2da86f6bc1a6c9a3a3de727ad7d718c17f66804ad8998f5f698a35ab",
+      "document": "mutation UpdateElection($candidates:[CreateCandidateInput!],$description:String,$electionId:ID!,$name:String){updateElection(input:{electionId:$electionId,name:$name,description:$description,candidates:$candidates}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}",
       "metadata": {
-        "engineSignature": "mutation UpdateElection($description:String,$electionId:ID!,$name:String){updateElection(input:{}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}"
+        "engineSignature": "mutation UpdateElection($candidates:[CreateCandidateInput!],$description:String,$electionId:ID!,$name:String){updateElection(input:{}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}"
       }
     },
     {

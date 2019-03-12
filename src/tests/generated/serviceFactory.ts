@@ -130,6 +130,6 @@ export function createService(client: ApolloClient<any>) {
   
   export const SetStatusMutation = gql`mutation SetStatus($electionId:ID!,$status:ElectionStatus!){setStatus(input:{electionId:$electionId,status:$status}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
   
-  export const UpdateElectionMutation = gql`mutation UpdateElection($description:String,$electionId:ID!,$name:String){updateElection(input:{electionId:$electionId,name:$name,description:$description}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
+  export const UpdateElectionMutation = gql`mutation UpdateElection($candidates:[CreateCandidateInput!],$description:String,$electionId:ID!,$name:String){updateElection(input:{electionId:$electionId,name:$name,description:$description,candidates:$candidates}){__typename election{__typename candidates{__typename description id name}createdBy{__typename email id}description id name results{__typename winner{__typename id name}}status statusTransitions{__typename on status}}}}`
   
   export const WeakLoginMutation = gql`mutation WeakLogin($adminToken:String!){weakLogin(input:{adminToken:$adminToken}){__typename accessToken}}`
