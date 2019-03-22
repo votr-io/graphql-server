@@ -44,7 +44,6 @@ testCases.forEach(({ testName, name, description, candidates }) => {
     expect(updatedElection.description).toBe(description ? description : ogDesciption);
 
     const expectedCandidates = candidates ? candidates : ogCandidates;
-    console.log(updatedElection.candidates);
     expectedCandidates.forEach(expectedCandidate => {
       expect(
         updatedElection.candidates.find(({ id }) => id === expectedCandidate.id).name

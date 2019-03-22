@@ -14,7 +14,12 @@ import {
   updateElection,
 } from './db/election';
 import * as lodash from 'lodash';
-import { IResolvers, ElectionStatusTransition, Candidate } from './generated/resolvers';
+import {
+  IResolvers,
+  ElectionStatusTransition,
+  Candidate,
+  CreateElectionResponse,
+} from './generated/resolvers';
 import { tallyElection } from './tallyElection';
 import { ElectionStatus, Election } from './types';
 const uuidv4 = require('uuid/v4');
@@ -181,19 +186,10 @@ export const schema = gql`
   }
 `;
 
-export const resolvers: IResolvers = {
+export const resolvers: IResolvers<Context> = {
   Query: {
-    getElections: async (_, args) => {
-      const { ids } = args.input;
-      /*
-      TODO: Authorization.  only return if:
-         - this election is owned by the user making the request
-         - this election is private, but the user making the request is registered
-         - this election is public
-      */
-
-      const elections = await getElections({ ids });
-
+    getElections: async (_, { input }, ctx) => {
+      const elections = await ctx.electionService.getElections(ctx, input.ids);
       return { elections };
     },
   },
@@ -235,84 +231,25 @@ export const resolvers: IResolvers = {
       };
     },
   },
+  CreateElectionResponse: {
+    adminToken: ({ election }) => {
+      //TODO: this may go away once we are actually emailing people
+      return tokens.encryptAdminToken({
+        userId: election.created_by,
+        electionId: election.id,
+      });
+    },
+  },
   Mutation: {
-    createElection: async (_, args) => {
-      const { name, description, candidates, email } = args.input;
+    createElection: async (_, { input }, ctx) => {
+      const { email } = input;
 
-      //TODO: move this validation somewhere better
-      const errors: string[] = [];
-      if (name === '') {
-        errors.push('name is required');
-      }
-      if (email == null || email === '') {
-        errors.push('email is required if you do not have an account');
-      }
-      if (candidates.length < 2) {
-        errors.push('at least two candidates are required');
-      }
-      if (candidates.filter(({ name }) => name === '').length !== 0) {
-        errors.push('candidate.name is required');
-      }
-      if (
-        lodash(candidates)
-          .filter(({ id }) => id != null)
-          .uniqBy(({ id }) => id.toLowerCase())
-          .value().length !=
-        lodash(candidates)
-          .filter(({ id }) => id != null)
-          .value().length
-      ) {
-        errors.push('candidates cannot have duplicate ods');
-      }
-      if (
-        lodash.uniqBy(candidates, ({ name }) => name.toLowerCase()).length !=
-        candidates.length
-      ) {
-        errors.push('candidates cannot have duplicate names');
-      }
-      if (errors.length > 0) {
-        throw new UserInputError(`createElection error: ${errors.join(', ')}`);
-      }
-
-      const now = new Date().toISOString();
-
-      let [user] = await getUsersByEmail({ emails: [email] });
-      if (!user) {
-        user = await createUser({
-          user: { id: uuidv4(), email, date_created: now, type: 'WEAK' },
-        });
-      }
-
-      let election = await createElection({
-        election: {
-          id: uuidv4(),
-          name,
-          description,
-          created_by: user.id,
-          date_created: now,
-          date_updated: now,
-          candidates: candidates.map(({ id, name, description }) => ({
-            id: id ? id : uuidv4(),
-            name,
-            description: description ? description : '',
-          })),
-          status: 'PENDING',
-          status_transitions: [
-            {
-              on: now,
-              status: 'PENDING',
-            },
-          ],
-        },
+      const election = await ctx.electionService.createElection(ctx, {
+        electionForm: input,
+        email,
       });
 
-      return {
-        election,
-        adminToken: tokens.encryptAdminToken({
-          userId: user.id,
-          electionId: election.id,
-        }),
-      };
+      return { election };
     },
 
     updateElection: async (_, args, { token }: Context) => {
