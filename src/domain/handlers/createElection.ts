@@ -58,55 +58,6 @@ export const createElectionHandler: Handler<
   },
 };
 
-export async function createElection(
-  ctx: Context,
-  input: {
-    electionForm: ElectionForm;
-    email: string;
-  }
-): Promise<Election> {
-  //   validateInput(input);
-
-  const { name, description, candidates } = input.electionForm;
-  const { email } = input;
-
-  const now = new Date().toISOString();
-
-  //TODO: go through users service
-  let [user] = await getUsersByEmail({ emails: [email] });
-
-  if (!user) {
-    user = await createUser({
-      user: { id: uuid(), email, date_created: now, type: 'WEAK' },
-    });
-  }
-
-  let election = await db.createElection({
-    election: {
-      id: uuid(),
-      name,
-      description,
-      created_by: user.id,
-      date_created: now,
-      date_updated: now,
-      candidates: candidates.map(({ id, name, description }) => ({
-        id: id ? id : uuid(),
-        name,
-        description: description ? description : '',
-      })),
-      status: 'PENDING',
-      status_transitions: [
-        {
-          on: now,
-          status: 'PENDING',
-        },
-      ],
-    },
-  });
-
-  return election;
-}
-
 function validate(input: { electionForm: ElectionForm; email: string }) {
   const { name, description, candidates } = input.electionForm;
   const { email } = input;
@@ -142,7 +93,6 @@ function validate(input: { electionForm: ElectionForm; email: string }) {
     errors.push('candidates cannot have duplicate names');
   }
   if (errors.length > 0) {
-    // throw new UserInputError(`createElection error: ${errors.join(', ')}`);
     return errors.join(', ');
   }
   return null;

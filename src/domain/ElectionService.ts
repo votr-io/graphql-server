@@ -2,7 +2,7 @@ import { Context } from '../context';
 import { Election, ElectionStatus } from './types';
 import { ForbiddenError, UserInputError } from 'apollo-server';
 import * as tokens from '../tokens';
-import { createElection, createElectionHandler } from './handlers/createElection';
+import { createElectionHandler } from './handlers/createElection';
 import { getElectionsHandler } from './handlers/getElections';
 import { updateElection } from './handlers/updateElection';
 import { deleteElections } from './handlers/deleteElections';
@@ -21,12 +21,12 @@ export interface CandidateForm {
   description?: string;
 }
 
-export type Handler<Context, Input, Output> = {
+export interface Handler<Context, Input, Output> {
   authenticate?(ctx: Context): string;
   authorize?(ctx: Context, input: Input): string;
   validate?(input: Input): string;
   handleRequest(ctx: Context, input: Input): Output;
-};
+}
 
 function useHandler<Context, Input, Output>(
   handler: Handler<Context, Input, Output>
