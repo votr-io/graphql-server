@@ -1,42 +1,9 @@
-import { CreateCandidateInput } from './../tests/generated/globalTypes';
 import { db } from './db';
 import { isObject } from 'util';
 import { UserInputError } from 'apollo-server';
 import { Observable } from 'rxjs';
 import * as QueryStream from 'pg-query-stream';
 import { Election } from '../domain/types';
-
-// export interface Election {
-//   id: string;
-//   name: string;
-//   description: string;
-//   created_by: string;
-//   date_created: string;
-//   date_updated: string;
-//   candidates: {
-//     id: string;
-//     name: string;
-//     description: string;
-//   }[];
-//   status: ElectionStatus;
-//   status_transitions: { on: string; status: ElectionStatus }[];
-//   results?: Results;
-// }
-
-// export interface Results {
-//   winner: string;
-//   replay: {
-//     candidate_totals: CandidateVotes[];
-//     redistribution: CandidateVotes[];
-//   }[];
-// }
-
-// export type ElectionStatus = 'PENDING' | 'OPEN' | 'TALLYING' | 'CLOSED';
-
-// export interface CandidateVotes {
-//   candidate_id: string;
-//   votes: number;
-// }
 
 export const createElection = async (input: {
   election: Election;
@@ -70,45 +37,6 @@ export const deleteElections = async (input: { ids: String[] }) => {
   //TODO: make this transactional
   await db.none('DELETE FROM ballots WHERE election_id IN ($1:csv);', ids);
   return await db.none('DELETE FROM elections WHERE id IN ($1:csv);', ids);
-};
-
-const createCandidatesSQL = `
-UPDATE elections
-SET date_updated = now() at time zone 'utc',
-candidates = candidates || $2::JSONB
-WHERE id = $1;
-`;
-
-export const createCandidates = async (input: {
-  electionId: string;
-  candidates: CreateCandidateInput[];
-}): Promise<Election> => {
-  const { electionId, candidates } = input;
-  await db.none(createCandidatesSQL, [electionId, JSON.stringify(candidates)]);
-  return getElection(electionId);
-};
-
-const deleteCandidateSQL = `
-UPDATE elections
-SET candidates = (SELECT jsonb_agg(e.value) --after all the stuff below this, we need to turn the value back into an array, since that's what we're setting
-                  FROM (
-                         SELECT candidates
-                         FROM elections
-                         WHERE id = $1
-                       ) election, jsonb_array_elements(
-                                       election.candidates) e -- e will be a table with one column called "value".  each candidate will be a row
-                  WHERE e.value ->> 'id' NOT IN ($2:csv) -- filter out the one we want to delete, targeting the id property
-)
-WHERE id = $1;
-`;
-
-export const deleteCandidates = async (input: {
-  electionId: string;
-  candidateIds: string[];
-}): Promise<Election> => {
-  const { electionId, candidateIds } = input;
-  await db.any(deleteCandidateSQL, [electionId, candidateIds]);
-  return getElection(electionId);
 };
 
 export const getElection = async (id: string): Promise<Election> => {

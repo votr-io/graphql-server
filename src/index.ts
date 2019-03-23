@@ -2,7 +2,6 @@ import * as express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import * as cors from 'cors';
 import { ENV } from './env';
-// import { typeDefs, resolvers } from './schemaAndResolvers';
 import { typeDefs } from './api/typeDefs';
 import { resolvers } from './api/resolvers';
 
