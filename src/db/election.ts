@@ -4,7 +4,7 @@ import { isObject } from 'util';
 import { UserInputError } from 'apollo-server';
 import { Observable } from 'rxjs';
 import * as QueryStream from 'pg-query-stream';
-import { Election } from '../types';
+import { Election } from '../domain/types';
 
 // export interface Election {
 //   id: string;
