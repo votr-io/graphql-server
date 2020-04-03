@@ -1,0 +1,142 @@
+type Query {
+  node(id: ID!): Node
+  election(id: ID!): Election
+  electionByToken(electionAccessToken: String!): Election
+}
+
+type Mutation {
+  ##election administration
+  upsertElection(
+    input: UpsertElectionInput!
+    electionAccessToken: String
+  ): UpsertElectionOutput!
+  startElection(
+    input: StartElectionInput!
+    electionAccessToken: String
+  ): StartElectionOutput!
+  stopElection(
+    input: StopElectionInput!
+    electionAccessToken: String
+  ): StopElectionOutput!
+
+  ##voting
+}
+
+input UpsertElectionInput {
+  id: ID!
+  name: String!
+  description: String!
+  createdByEmail: String!
+  candidates: [Candidate!]!
+}
+type UpsertElectionOutput {
+  election: Election!
+  electionAccessToken: String!
+}
+
+input StartElectionInput {
+  electionId: ID!
+}
+type StartElectionOutput {
+  election: Election!
+}
+
+input StopElectionInput {
+  electionId: ID!
+}
+type StopElectionOutput {
+  election: Election!
+}
+
+input ElectionsFilters {
+  ids: [ID!]
+}
+
+type ElectionConnection {
+  edges: [ElectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ElectionEdge {
+  node: Election!
+  cursor: String
+}
+
+interface Node {
+  id: ID!
+}
+
+"""
+Possible statuses an election can be in.
+Transitions only go in one direction.  There's no going back.
+"""
+enum ElectionStatus {
+  SETUP
+  OPEN
+  TALLYING
+  CLOSED
+}
+
+"""
+An election.
+"""
+type Election implements Node {
+  id: ID!
+  name: String!
+  description: String!
+  createdByEmail: String!
+  dateCreated: String!
+  dateUpdated: String!
+  candidates: [Candidate!]!
+  status: ElectionStatus!
+  results: Results
+}
+
+"""
+A candidate in a specific election.
+"""
+type Candidate {
+  id: ID!
+  name: String!
+  description: String
+}
+
+"""
+The winner of the election and all of the data needed to show how the election was won.
+"""
+type Results {
+  winner: Candidate!
+  replay: [Round!]!
+}
+
+"""
+Information about a specific round of an election.
+If this is the final round of the election, redistribution will be null,
+  candidateTotals - the number of votes each candidate is awarded this round
+  redistribution - the number of votes being redistributed to each candidate (does not include the last place candidate for this round)
+"""
+type Round {
+  candidateTotals: [CandidateVotes!]!
+  redistribution: [CandidateVotes]
+}
+
+"""
+Votes associated with a candidate.
+Can be used for:
+  - number of votes a candidate recieved in a round
+  - number of votes being redistributed to a candidate in the event there's more than one round
+
+Note: if canditate is null, that means that these votes no longer have a valid candidate to count towards (all the candidates on these ballots have been dropped from the election due to being in last place in previous rounds)
+"""
+type CandidateVotes {
+  candidate: Candidate
+  votes: Int!
+}
+
+# -- value types --
+type PageInfo {
+  hasPreviousPage: Boolean
+  startCursor: String
+  hasNextPage: Boolean
+  endCursor: String
+}
