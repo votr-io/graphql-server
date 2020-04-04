@@ -1,24 +1,27 @@
-interface Node {
-  id: string;
+export enum Status {
+  SETUP = 'SETUP',
+  OPEN = 'OPEN',
+  TALLYING = 'TALLYING',
+  CLOSED = 'CLOSED',
 }
 
-interface Election {
+export interface Election {
   id: string;
   dateCreated: Date;
   dateUpdated: Date;
   createdByEmail?: string;
   name: string;
   description: string;
+  status: Status;
   candidates: Candidate[];
   results?: Results;
 }
-
-interface Candidate {
+export interface Candidate {
   id: string;
   name: string;
   description: string;
 }
 
-interface Results {
+export interface Results {
   //TODO
 }

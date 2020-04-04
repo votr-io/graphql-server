@@ -20,6 +20,7 @@ type Mutation {
   ): StopElectionOutput!
 
   ##voting
+  castBallot(input: CastBallotInput!): CastBallotOutput!
 }
 
 input UpsertElectionInput {
@@ -27,7 +28,12 @@ input UpsertElectionInput {
   name: String!
   description: String!
   createdByEmail: String!
-  candidates: [Candidate!]!
+  candidates: [CandidateInput!]!
+}
+input CandidateInput {
+  id: ID!
+  name: String!
+  description: String!
 }
 type UpsertElectionOutput {
   election: Election!
@@ -48,18 +54,13 @@ type StopElectionOutput {
   election: Election!
 }
 
-input ElectionsFilters {
-  ids: [ID!]
+input CastBallotInput {
+  electionId: ID!
+  candidateIds: [ID!]!
 }
 
-type ElectionConnection {
-  edges: [ElectionEdge!]!
-  pageInfo: PageInfo!
-}
-
-type ElectionEdge {
-  node: Election!
-  cursor: String
+type CastBallotOutput {
+  _: Boolean
 }
 
 interface Node {
@@ -84,7 +85,7 @@ type Election implements Node {
   id: ID!
   name: String!
   description: String!
-  createdByEmail: String!
+  createdByEmail: String
   dateCreated: String!
   dateUpdated: String!
   candidates: [Candidate!]!
@@ -98,7 +99,7 @@ A candidate in a specific election.
 type Candidate {
   id: ID!
   name: String!
-  description: String
+  description: String!
 }
 
 """
@@ -131,12 +132,4 @@ Note: if canditate is null, that means that these votes no longer have a valid c
 type CandidateVotes {
   candidate: Candidate
   votes: Int!
-}
-
-# -- value types --
-type PageInfo {
-  hasPreviousPage: Boolean
-  startCursor: String
-  hasNextPage: Boolean
-  endCursor: String
 }

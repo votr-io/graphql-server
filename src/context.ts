@@ -1,3 +1,1 @@
-interface Context {
-  token?: string;
-}
+export interface Context {}

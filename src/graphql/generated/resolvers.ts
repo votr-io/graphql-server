@@ -1,5 +1,4 @@
 import { GraphQLResolveInfo } from 'graphql';
-import { Node } from '../../types';
 export type Maybe<T> = T | null;
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
@@ -16,7 +15,13 @@ export type Candidate = {
    __typename?: 'Candidate';
   id: Scalars['ID'];
   name: Scalars['String'];
-  description?: Maybe<Scalars['String']>;
+  description: Scalars['String'];
+};
+
+export type CandidateInput = {
+  id: Scalars['ID'];
+  name: Scalars['String'];
+  description: Scalars['String'];
 };
 
 /**
@@ -35,34 +40,28 @@ export type CandidateVotes = {
   votes: Scalars['Int'];
 };
 
+export type CastBallotInput = {
+  electionId: Scalars['ID'];
+  candidateIds: Array<Scalars['ID']>;
+};
+
+export type CastBallotOutput = {
+   __typename?: 'CastBallotOutput';
+  _?: Maybe<Scalars['Boolean']>;
+};
+
 /** An election. */
 export type Election = Node & {
    __typename?: 'Election';
   id: Scalars['ID'];
   name: Scalars['String'];
   description: Scalars['String'];
-  createdByEmail: Scalars['String'];
+  createdByEmail?: Maybe<Scalars['String']>;
   dateCreated: Scalars['String'];
   dateUpdated: Scalars['String'];
   candidates: Array<Candidate>;
   status: ElectionStatus;
   results?: Maybe<Results>;
-};
-
-export type ElectionConnection = {
-   __typename?: 'ElectionConnection';
-  edges: Array<ElectionEdge>;
-  pageInfo: PageInfo;
-};
-
-export type ElectionEdge = {
-   __typename?: 'ElectionEdge';
-  node: Election;
-  cursor?: Maybe<Scalars['String']>;
-};
-
-export type ElectionsFilters = {
-  ids?: Maybe<Array<Scalars['ID']>>;
 };
 
 /**
@@ -82,6 +81,8 @@ export type Mutation = {
   upsertElection: UpsertElectionOutput;
   startElection: StartElectionOutput;
   stopElection: StopElectionOutput;
+  /** #voting */
+  castBallot: CastBallotOutput;
 };
 
 
@@ -102,17 +103,13 @@ export type MutationStopElectionArgs = {
   electionAccessToken?: Maybe<Scalars['String']>;
 };
 
-export type Node = {
-  id: Scalars['ID'];
+
+export type MutationCastBallotArgs = {
+  input: CastBallotInput;
 };
 
-/** -- value types -- */
-export type PageInfo = {
-   __typename?: 'PageInfo';
-  hasPreviousPage?: Maybe<Scalars['Boolean']>;
-  startCursor?: Maybe<Scalars['String']>;
-  hasNextPage?: Maybe<Scalars['Boolean']>;
-  endCursor?: Maybe<Scalars['String']>;
+export type Node = {
+  id: Scalars['ID'];
 };
 
 export type Query = {
@@ -180,7 +177,7 @@ export type UpsertElectionInput = {
   name: Scalars['String'];
   description: Scalars['String'];
   createdByEmail: Scalars['String'];
-  candidates: Array<Candidate>;
+  candidates: Array<CandidateInput>;
 };
 
 export type UpsertElectionOutput = {
@@ -275,16 +272,15 @@ export type ResolversTypes = {
   Int: ResolverTypeWrapper<Scalars['Int']>,
   Mutation: ResolverTypeWrapper<{}>,
   UpsertElectionInput: UpsertElectionInput,
+  CandidateInput: CandidateInput,
   UpsertElectionOutput: ResolverTypeWrapper<UpsertElectionOutput>,
   StartElectionInput: StartElectionInput,
   StartElectionOutput: ResolverTypeWrapper<StartElectionOutput>,
   StopElectionInput: StopElectionInput,
   StopElectionOutput: ResolverTypeWrapper<StopElectionOutput>,
+  CastBallotInput: CastBallotInput,
+  CastBallotOutput: ResolverTypeWrapper<CastBallotOutput>,
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>,
-  ElectionsFilters: ElectionsFilters,
-  ElectionConnection: ResolverTypeWrapper<ElectionConnection>,
-  ElectionEdge: ResolverTypeWrapper<ElectionEdge>,
-  PageInfo: ResolverTypeWrapper<PageInfo>,
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -302,22 +298,21 @@ export type ResolversParentTypes = {
   Int: Scalars['Int'],
   Mutation: {},
   UpsertElectionInput: UpsertElectionInput,
+  CandidateInput: CandidateInput,
   UpsertElectionOutput: UpsertElectionOutput,
   StartElectionInput: StartElectionInput,
   StartElectionOutput: StartElectionOutput,
   StopElectionInput: StopElectionInput,
   StopElectionOutput: StopElectionOutput,
+  CastBallotInput: CastBallotInput,
+  CastBallotOutput: CastBallotOutput,
   Boolean: Scalars['Boolean'],
-  ElectionsFilters: ElectionsFilters,
-  ElectionConnection: ElectionConnection,
-  ElectionEdge: ElectionEdge,
-  PageInfo: PageInfo,
 };
 
 export type CandidateResolvers<ContextType = any, ParentType extends ResolversParentTypes['Candidate'] = ResolversParentTypes['Candidate']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 
@@ -327,11 +322,16 @@ export type CandidateVotesResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 
+export type CastBallotOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['CastBallotOutput'] = ResolversParentTypes['CastBallotOutput']> = {
+  _?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>,
+  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+};
+
 export type ElectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Election'] = ResolversParentTypes['Election']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  createdByEmail?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
+  createdByEmail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
   dateCreated?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   dateUpdated?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   candidates?: Resolver<Array<ResolversTypes['Candidate']>, ParentType, ContextType>,
@@ -340,35 +340,16 @@ export type ElectionResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 
-export type ElectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ElectionConnection'] = ResolversParentTypes['ElectionConnection']> = {
-  edges?: Resolver<Array<ResolversTypes['ElectionEdge']>, ParentType, ContextType>,
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
-};
-
-export type ElectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ElectionEdge'] = ResolversParentTypes['ElectionEdge']> = {
-  node?: Resolver<ResolversTypes['Election'], ParentType, ContextType>,
-  cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
-};
-
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   upsertElection?: Resolver<ResolversTypes['UpsertElectionOutput'], ParentType, ContextType, RequireFields<MutationUpsertElectionArgs, 'input'>>,
   startElection?: Resolver<ResolversTypes['StartElectionOutput'], ParentType, ContextType, RequireFields<MutationStartElectionArgs, 'input'>>,
   stopElection?: Resolver<ResolversTypes['StopElectionOutput'], ParentType, ContextType, RequireFields<MutationStopElectionArgs, 'input'>>,
+  castBallot?: Resolver<ResolversTypes['CastBallotOutput'], ParentType, ContextType, RequireFields<MutationCastBallotArgs, 'input'>>,
 };
 
 export type NodeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Node'] = ResolversParentTypes['Node']> = {
   __resolveType: TypeResolveFn<'Election', ParentType, ContextType>,
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
-};
-
-export type PageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = {
-  hasPreviousPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>,
-  startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  hasNextPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>,
-  endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-  __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
@@ -408,12 +389,10 @@ export type UpsertElectionOutputResolvers<ContextType = any, ParentType extends 
 export type Resolvers<ContextType = any> = {
   Candidate?: CandidateResolvers<ContextType>,
   CandidateVotes?: CandidateVotesResolvers<ContextType>,
+  CastBallotOutput?: CastBallotOutputResolvers<ContextType>,
   Election?: ElectionResolvers<ContextType>,
-  ElectionConnection?: ElectionConnectionResolvers<ContextType>,
-  ElectionEdge?: ElectionEdgeResolvers<ContextType>,
   Mutation?: MutationResolvers<ContextType>,
   Node?: NodeResolvers,
-  PageInfo?: PageInfoResolvers<ContextType>,
   Query?: QueryResolvers<ContextType>,
   Results?: ResultsResolvers<ContextType>,
   Round?: RoundResolvers<ContextType>,
