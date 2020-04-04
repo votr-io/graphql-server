@@ -1,31 +1,24 @@
-export interface Election {
+interface Node {
   id: string;
+}
+
+interface Election {
+  id: string;
+  dateCreated: Date;
+  dateUpdated: Date;
+  createdByEmail?: string;
   name: string;
   description: string;
-  created_by: string;
-  date_created: string;
-  date_updated: string;
-  candidates: {
-    id: string;
-    name: string;
-    description: string;
-  }[];
-  status: ElectionStatus;
-  status_transitions: { on: string; status: ElectionStatus }[];
+  candidates: Candidate[];
   results?: Results;
 }
 
-export interface Results {
-  winner: string;
-  replay: {
-    candidate_totals: CandidateVotes[];
-    redistribution: CandidateVotes[];
-  }[];
+interface Candidate {
+  id: string;
+  name: string;
+  description: string;
 }
 
-export type ElectionStatus = 'PENDING' | 'OPEN' | 'TALLYING' | 'CLOSED';
-
-export interface CandidateVotes {
-  candidate_id: string;
-  votes: number;
+interface Results {
+  //TODO
 }

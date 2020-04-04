@@ -1,11 +1,11 @@
-schema: http://localhost:5000/graphql
+schema:
+  - ./graphql/*.graphql
 overwrite: true
 generates:
-  ./src/generated/resolvers.ts:
+  ./src/GraphQL/generated/resolvers.ts:
     config:
       mappers:
-        Election: ./src/types#Election
+        # Node: ../../types#Node
     plugins:
-      - typescript-common
-      - typescript-server
+      - typescript
       - typescript-resolvers
