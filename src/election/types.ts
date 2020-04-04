@@ -15,6 +15,8 @@ export interface Election {
   status: Status;
   candidates: Candidate[];
   results?: Results;
+
+  cursor: string;
 }
 export interface Candidate {
   id: string;
@@ -24,4 +26,11 @@ export interface Candidate {
 
 export interface Results {
   //TODO
+}
+
+export interface PageInfo {
+  hasPreviousPage?: boolean;
+  startCursor?: string;
+  hasNextPage?: boolean;
+  endCursor?: string;
 }
