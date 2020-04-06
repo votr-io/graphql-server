@@ -1,33 +1,50 @@
 type Query {
-  node(id: ID!): Node
+  #you'll need to call this to determine if you are logged in (aka. have cookies set)
+  #User will be null if you are not logged in
+  self: User
+
   election(id: ID!): Election
-  electionByToken(electionAccessToken: String!): Election
 }
 
 type Mutation {
+  ## user stuff
+  #login will set cookie with this users auth info
+  login(email: String!, password: String!): LoginOutput!
+  #logout just clears cookies
+  logout: Boolean
+  #upsertUser will set cookie with this users auth info
+  upsertUser(input: UpsertUserInput!): UpsertUserOutput!
+
   ##election administration
-  upsertElection(
-    input: UpsertElectionInput!
-    electionAccessToken: String
-  ): UpsertElectionOutput!
-  startElection(
-    input: StartElectionInput!
-    electionAccessToken: String
-  ): StartElectionOutput!
-  stopElection(
-    input: StopElectionInput!
-    electionAccessToken: String
-  ): StopElectionOutput!
+  upsertElection(input: UpsertElectionInput!): UpsertElectionOutput!
+  startElection(input: StartElectionInput!): StartElectionOutput!
+  stopElection(input: StopElectionInput!): StopElectionOutput!
 
   ##voting
   castBallot(input: CastBallotInput!): CastBallotOutput!
 }
 
+##users
+
+type LoginOutput {
+  user: User!
+}
+
+input UpsertUserInput {
+  id: ID
+  email: String
+  password: String
+}
+type UpsertUserOutput {
+  user: User!
+}
+
+##election admin
+
 input UpsertElectionInput {
   id: ID!
   name: String!
   description: String!
-  createdByEmail: String!
   candidates: [CandidateInput!]!
 }
 input CandidateInput {
@@ -37,7 +54,6 @@ input CandidateInput {
 }
 type UpsertElectionOutput {
   election: Election!
-  electionAccessToken: String!
 }
 
 input StartElectionInput {
@@ -54,6 +70,7 @@ type StopElectionOutput {
   election: Election!
 }
 
+##voting
 input CastBallotInput {
   electionId: ID!
   candidateIds: [ID!]!
@@ -63,8 +80,12 @@ type CastBallotOutput {
   _: Boolean
 }
 
-interface Node {
+##types
+
+type User {
   id: ID!
+  email: String # null if the user is not authorized to see this
+  elections: [Election!]! #elections that this user has created
 }
 
 """
@@ -81,11 +102,11 @@ enum ElectionStatus {
 """
 An election.
 """
-type Election implements Node {
+type Election {
   id: ID!
   name: String!
   description: String!
-  createdByEmail: String
+  createdBy: User!
   dateCreated: String!
   dateUpdated: String!
   candidates: [Candidate!]!

@@ -40,6 +40,7 @@ export type CandidateVotes = {
   votes: Scalars['Int'];
 };
 
+/** #voting */
 export type CastBallotInput = {
   electionId: Scalars['ID'];
   candidateIds: Array<Scalars['ID']>;
@@ -51,12 +52,12 @@ export type CastBallotOutput = {
 };
 
 /** An election. */
-export type Election = Node & {
+export type Election = {
    __typename?: 'Election';
   id: Scalars['ID'];
   name: Scalars['String'];
   description: Scalars['String'];
-  createdByEmail?: Maybe<Scalars['String']>;
+  createdBy: User;
   dateCreated: Scalars['String'];
   dateUpdated: Scalars['String'];
   candidates: Array<Candidate>;
@@ -75,8 +76,22 @@ export enum ElectionStatus {
   Closed = 'CLOSED'
 }
 
+export type LoginOutput = {
+   __typename?: 'LoginOutput';
+  user: User;
+};
+
 export type Mutation = {
    __typename?: 'Mutation';
+  /**
+   * # user stuff
+   * login will set cookie with this users auth info
+   */
+  login: LoginOutput;
+  /** logout just clears cookies */
+  logout?: Maybe<Scalars['Boolean']>;
+  /** upsertUser will set cookie with this users auth info */
+  upsertUser: UpsertUserOutput;
   /** #election administration */
   upsertElection: UpsertElectionOutput;
   startElection: StartElectionOutput;
@@ -86,21 +101,29 @@ export type Mutation = {
 };
 
 
+export type MutationLoginArgs = {
+  email: Scalars['String'];
+  password: Scalars['String'];
+};
+
+
+export type MutationUpsertUserArgs = {
+  input: UpsertUserInput;
+};
+
+
 export type MutationUpsertElectionArgs = {
   input: UpsertElectionInput;
-  electionAccessToken?: Maybe<Scalars['String']>;
 };
 
 
 export type MutationStartElectionArgs = {
   input: StartElectionInput;
-  electionAccessToken?: Maybe<Scalars['String']>;
 };
 
 
 export type MutationStopElectionArgs = {
   input: StopElectionInput;
-  electionAccessToken?: Maybe<Scalars['String']>;
 };
 
 
@@ -108,30 +131,19 @@ export type MutationCastBallotArgs = {
   input: CastBallotInput;
 };
 
-export type Node = {
-  id: Scalars['ID'];
-};
-
 export type Query = {
    __typename?: 'Query';
-  node?: Maybe<Node>;
+  /**
+   * you'll need to call this to determine if you are logged in (aka. have cookies set)
+   * User will be null if you are not logged in
+   */
+  self?: Maybe<User>;
   election?: Maybe<Election>;
-  electionByToken?: Maybe<Election>;
-};
-
-
-export type QueryNodeArgs = {
-  id: Scalars['ID'];
 };
 
 
 export type QueryElectionArgs = {
   id: Scalars['ID'];
-};
-
-
-export type QueryElectionByTokenArgs = {
-  electionAccessToken: Scalars['String'];
 };
 
 /** The winner of the election and all of the data needed to show how the election was won. */
@@ -176,14 +188,30 @@ export type UpsertElectionInput = {
   id: Scalars['ID'];
   name: Scalars['String'];
   description: Scalars['String'];
-  createdByEmail: Scalars['String'];
   candidates: Array<CandidateInput>;
 };
 
 export type UpsertElectionOutput = {
    __typename?: 'UpsertElectionOutput';
   election: Election;
-  electionAccessToken: Scalars['String'];
+};
+
+export type UpsertUserInput = {
+  id?: Maybe<Scalars['ID']>;
+  email?: Maybe<Scalars['String']>;
+  password?: Maybe<Scalars['String']>;
+};
+
+export type UpsertUserOutput = {
+   __typename?: 'UpsertUserOutput';
+  user: User;
+};
+
+export type User = {
+   __typename?: 'User';
+  id: Scalars['ID'];
+  email?: Maybe<Scalars['String']>;
+  elections: Array<Election>;
 };
 
 
@@ -260,10 +288,10 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>,
+  User: ResolverTypeWrapper<User>,
   ID: ResolverTypeWrapper<Scalars['ID']>,
-  Node: ResolversTypes['Election'],
-  Election: ResolverTypeWrapper<Election>,
   String: ResolverTypeWrapper<Scalars['String']>,
+  Election: ResolverTypeWrapper<Election>,
   Candidate: ResolverTypeWrapper<Candidate>,
   ElectionStatus: ElectionStatus,
   Results: ResolverTypeWrapper<Results>,
@@ -271,6 +299,10 @@ export type ResolversTypes = {
   CandidateVotes: ResolverTypeWrapper<CandidateVotes>,
   Int: ResolverTypeWrapper<Scalars['Int']>,
   Mutation: ResolverTypeWrapper<{}>,
+  LoginOutput: ResolverTypeWrapper<LoginOutput>,
+  Boolean: ResolverTypeWrapper<Scalars['Boolean']>,
+  UpsertUserInput: UpsertUserInput,
+  UpsertUserOutput: ResolverTypeWrapper<UpsertUserOutput>,
   UpsertElectionInput: UpsertElectionInput,
   CandidateInput: CandidateInput,
   UpsertElectionOutput: ResolverTypeWrapper<UpsertElectionOutput>,
@@ -280,16 +312,15 @@ export type ResolversTypes = {
   StopElectionOutput: ResolverTypeWrapper<StopElectionOutput>,
   CastBallotInput: CastBallotInput,
   CastBallotOutput: ResolverTypeWrapper<CastBallotOutput>,
-  Boolean: ResolverTypeWrapper<Scalars['Boolean']>,
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Query: {},
+  User: User,
   ID: Scalars['ID'],
-  Node: ResolversParentTypes['Election'],
-  Election: Election,
   String: Scalars['String'],
+  Election: Election,
   Candidate: Candidate,
   ElectionStatus: ElectionStatus,
   Results: Results,
@@ -297,6 +328,10 @@ export type ResolversParentTypes = {
   CandidateVotes: CandidateVotes,
   Int: Scalars['Int'],
   Mutation: {},
+  LoginOutput: LoginOutput,
+  Boolean: Scalars['Boolean'],
+  UpsertUserInput: UpsertUserInput,
+  UpsertUserOutput: UpsertUserOutput,
   UpsertElectionInput: UpsertElectionInput,
   CandidateInput: CandidateInput,
   UpsertElectionOutput: UpsertElectionOutput,
@@ -306,7 +341,6 @@ export type ResolversParentTypes = {
   StopElectionOutput: StopElectionOutput,
   CastBallotInput: CastBallotInput,
   CastBallotOutput: CastBallotOutput,
-  Boolean: Scalars['Boolean'],
 };
 
 export type CandidateResolvers<ContextType = any, ParentType extends ResolversParentTypes['Candidate'] = ResolversParentTypes['Candidate']> = {
@@ -331,7 +365,7 @@ export type ElectionResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  createdByEmail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
+  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>,
   dateCreated?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   dateUpdated?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   candidates?: Resolver<Array<ResolversTypes['Candidate']>, ParentType, ContextType>,
@@ -340,22 +374,24 @@ export type ElectionResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 
+export type LoginOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['LoginOutput'] = ResolversParentTypes['LoginOutput']> = {
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>,
+  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+};
+
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  login?: Resolver<ResolversTypes['LoginOutput'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'email' | 'password'>>,
+  logout?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>,
+  upsertUser?: Resolver<ResolversTypes['UpsertUserOutput'], ParentType, ContextType, RequireFields<MutationUpsertUserArgs, 'input'>>,
   upsertElection?: Resolver<ResolversTypes['UpsertElectionOutput'], ParentType, ContextType, RequireFields<MutationUpsertElectionArgs, 'input'>>,
   startElection?: Resolver<ResolversTypes['StartElectionOutput'], ParentType, ContextType, RequireFields<MutationStartElectionArgs, 'input'>>,
   stopElection?: Resolver<ResolversTypes['StopElectionOutput'], ParentType, ContextType, RequireFields<MutationStopElectionArgs, 'input'>>,
   castBallot?: Resolver<ResolversTypes['CastBallotOutput'], ParentType, ContextType, RequireFields<MutationCastBallotArgs, 'input'>>,
 };
 
-export type NodeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Node'] = ResolversParentTypes['Node']> = {
-  __resolveType: TypeResolveFn<'Election', ParentType, ContextType>,
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
-};
-
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  node?: Resolver<Maybe<ResolversTypes['Node']>, ParentType, ContextType, RequireFields<QueryNodeArgs, 'id'>>,
+  self?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>,
   election?: Resolver<Maybe<ResolversTypes['Election']>, ParentType, ContextType, RequireFields<QueryElectionArgs, 'id'>>,
-  electionByToken?: Resolver<Maybe<ResolversTypes['Election']>, ParentType, ContextType, RequireFields<QueryElectionByTokenArgs, 'electionAccessToken'>>,
 };
 
 export type ResultsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Results'] = ResolversParentTypes['Results']> = {
@@ -382,7 +418,18 @@ export type StopElectionOutputResolvers<ContextType = any, ParentType extends Re
 
 export type UpsertElectionOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpsertElectionOutput'] = ResolversParentTypes['UpsertElectionOutput']> = {
   election?: Resolver<ResolversTypes['Election'], ParentType, ContextType>,
-  electionAccessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
+  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+};
+
+export type UpsertUserOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpsertUserOutput'] = ResolversParentTypes['UpsertUserOutput']> = {
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>,
+  __isTypeOf?: isTypeOfResolverFn<ParentType>,
+};
+
+export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
+  elections?: Resolver<Array<ResolversTypes['Election']>, ParentType, ContextType>,
   __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 
@@ -391,14 +438,16 @@ export type Resolvers<ContextType = any> = {
   CandidateVotes?: CandidateVotesResolvers<ContextType>,
   CastBallotOutput?: CastBallotOutputResolvers<ContextType>,
   Election?: ElectionResolvers<ContextType>,
+  LoginOutput?: LoginOutputResolvers<ContextType>,
   Mutation?: MutationResolvers<ContextType>,
-  Node?: NodeResolvers,
   Query?: QueryResolvers<ContextType>,
   Results?: ResultsResolvers<ContextType>,
   Round?: RoundResolvers<ContextType>,
   StartElectionOutput?: StartElectionOutputResolvers<ContextType>,
   StopElectionOutput?: StopElectionOutputResolvers<ContextType>,
   UpsertElectionOutput?: UpsertElectionOutputResolvers<ContextType>,
+  UpsertUserOutput?: UpsertUserOutputResolvers<ContextType>,
+  User?: UserResolvers<ContextType>,
 };
 
 
