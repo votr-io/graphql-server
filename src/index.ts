@@ -7,6 +7,7 @@ import { server } from './GraphQL';
 import { migrate } from './postgres';
 import { upsertUser } from './user/service';
 import * as uuid from 'uuid';
+import { listUsers, getUser } from './user/store';
 
 /**
  * This is the main entry point for our server.
@@ -37,6 +38,21 @@ import * as uuid from 'uuid';
   logger.info('starting up!');
 
   await migrate();
+
+  // const { users } = await listUsers(
+  //   {},
+  //   {
+  //     where: {
+  //       // ids: ['ec06967c-ec9a-484a-a83c-657e2a0cb05c'],
+  //     },
+  //   }
+  // );
+
+  const { user } = await getUser({}, { id: 'a1e1cd05-ec5f-4a02-a334-0f98ca4eefb8' });
+
+  console.log({ user });
+
+  // console.log(users[0]);
 
   const app = express();
   app.use(cookieParser());

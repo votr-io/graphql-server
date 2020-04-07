@@ -9,7 +9,7 @@ export const CONFIG = {
   PORT: process.env.PORT || '5000',
   DATABASE_URL: process.env.DATABASE_URL,
   TOKEN_SECRET: process.env.TOKEN_SECRET,
-  DEFAULT_LIMI: 25,
+  DEFAULT_LIMIT: 25,
 };
 
 /**

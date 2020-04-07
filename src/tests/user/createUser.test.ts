@@ -31,12 +31,29 @@ describe('creating a user', () => {
     expect(response.upsertUser.user.email).toEqual(email);
   });
 
-  it('throws an error if email is not provided or is invalid', async () => {
+  it('throws an error if email is not provided', async () => {
     const password = 'boggle';
-    const response = await sdk.upsertUser({
-      input: {
-        password,
-      },
-    });
+
+    await expect(
+      sdk.upsertUser({
+        input: {
+          password,
+        },
+      })
+    ).rejects.toThrow(`required`);
+  });
+
+  it('throws an error if email is not valid', async () => {
+    const email = 'asdf';
+    const password = 'boggle';
+
+    await expect(
+      sdk.upsertUser({
+        input: {
+          email,
+          password,
+        },
+      })
+    ).rejects.toThrow(`invalid`);
   });
 });
