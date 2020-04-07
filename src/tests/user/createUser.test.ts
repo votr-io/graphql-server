@@ -1,11 +1,10 @@
 import * as uuid from 'uuid';
 import { sdk } from '../graphql/sdk';
 describe('creating a user', () => {
-  const id = uuid.v4();
-  const email = 'test@fake.com';
-  const password = 'boggle';
-
   it('obeys client ids for creation', async () => {
+    const id = uuid.v4();
+    const email = 'test@fake.com';
+    const password = 'boggle';
     const response = await sdk.upsertUser({
       input: {
         id,
@@ -19,6 +18,8 @@ describe('creating a user', () => {
   });
 
   it('generates an id if one is not provided', async () => {
+    const email = 'test@fake.com';
+    const password = 'boggle';
     const response = await sdk.upsertUser({
       input: {
         email,
@@ -28,5 +29,14 @@ describe('creating a user', () => {
 
     expect(response.upsertUser.user.id.length).toEqual(36);
     expect(response.upsertUser.user.email).toEqual(email);
+  });
+
+  it('throws an error if email is not provided or is invalid', async () => {
+    const password = 'boggle';
+    const response = await sdk.upsertUser({
+      input: {
+        password,
+      },
+    });
   });
 });

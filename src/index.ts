@@ -38,17 +38,6 @@ import * as uuid from 'uuid';
 
   await migrate();
 
-  const test = await upsertUser(
-    {},
-    {
-      id: uuid.v4(),
-      email: 'asdf',
-      password: 'boggle',
-    }
-  );
-
-  console.log(test);
-
   const app = express();
   app.use(cookieParser());
   server.applyMiddleware({ app, path: '/graphql' });

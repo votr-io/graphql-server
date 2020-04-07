@@ -41,7 +41,6 @@ export type CandidateVotes = {
   votes: Scalars['Int'];
 };
 
-/** #voting */
 export type CastBallotInput = {
   electionId: Scalars['ID'];
   candidateIds: Array<Scalars['ID']>;
@@ -84,20 +83,12 @@ export type LoginOutput = {
 
 export type Mutation = {
    __typename?: 'Mutation';
-  /**
-   * # user stuff
-   * login will set cookie with this users auth info
-   */
   login: LoginOutput;
-  /** logout just clears cookies */
   logout?: Maybe<Scalars['Boolean']>;
-  /** upsertUser will set cookie with this users auth info */
   upsertUser: UpsertUserOutput;
-  /** #election administration */
   upsertElection: UpsertElectionOutput;
   startElection: StartElectionOutput;
   stopElection: StopElectionOutput;
-  /** #voting */
   castBallot: CastBallotOutput;
 };
 
@@ -134,10 +125,6 @@ export type MutationCastBallotArgs = {
 
 export type Query = {
    __typename?: 'Query';
-  /**
-   * you'll need to call this to determine if you are logged in (aka. have cookies set)
-   * User will be null if you are not logged in
-   */
   self?: Maybe<User>;
   election?: Maybe<Election>;
 };
