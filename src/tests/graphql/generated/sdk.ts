@@ -41,7 +41,6 @@ export type CandidateVotes = {
   votes: Scalars['Int'];
 };
 
-/** #voting */
 export type CastBallotInput = {
   electionId: Scalars['ID'];
   candidateIds: Array<Scalars['ID']>;
@@ -84,20 +83,12 @@ export type LoginOutput = {
 
 export type Mutation = {
    __typename?: 'Mutation';
-  /**
-   * # user stuff
-   * login will set cookie with this users auth info
-   */
   login: LoginOutput;
-  /** logout just clears cookies */
   logout?: Maybe<Scalars['Boolean']>;
-  /** upsertUser will set cookie with this users auth info */
   upsertUser: UpsertUserOutput;
-  /** #election administration */
   upsertElection: UpsertElectionOutput;
   startElection: StartElectionOutput;
   stopElection: StopElectionOutput;
-  /** #voting */
   castBallot: CastBallotOutput;
 };
 
@@ -134,10 +125,6 @@ export type MutationCastBallotArgs = {
 
 export type Query = {
    __typename?: 'Query';
-  /**
-   * you'll need to call this to determine if you are logged in (aka. have cookies set)
-   * User will be null if you are not logged in
-   */
   self?: Maybe<User>;
   election?: Maybe<Election>;
 };
@@ -231,6 +218,17 @@ export type UpsertUserMutation = (
   ) }
 );
 
+export type SelfQueryVariables = {};
+
+
+export type SelfQuery = (
+  { __typename?: 'Query' }
+  & { self?: Maybe<(
+    { __typename?: 'User' }
+    & Pick<User, 'id' | 'email'>
+  )> }
+);
+
 
 export const UpsertUserDocument = gql`
     mutation upsertUser($input: UpsertUserInput!) {
@@ -239,6 +237,14 @@ export const UpsertUserDocument = gql`
       id
       email
     }
+  }
+}
+    `;
+export const SelfDocument = gql`
+    query self {
+  self {
+    id
+    email
   }
 }
     `;
@@ -251,6 +257,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
   return {
     upsertUser(variables: UpsertUserMutationVariables): Promise<UpsertUserMutation> {
       return withWrapper(() => client.request<UpsertUserMutation>(print(UpsertUserDocument), variables));
+    },
+    self(variables?: SelfQueryVariables): Promise<SelfQuery> {
+      return withWrapper(() => client.request<SelfQuery>(print(SelfDocument), variables));
     }
   };
 }

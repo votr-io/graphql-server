@@ -13,15 +13,15 @@ export type Context = ReturnType<typeof context>;
  * - attach data loader functions to the context to be used in resolvers
  */
 export function context({ req, res }: { req: Request; res: Response }) {
-  // const token = getToken(req);
+  const token = getToken(req);
 
   //base context that we'll be passing to dataloader factory functions
   //aka - the overlap GraphqlContext has with the Service Context
-  // const ctx = { token };
+  const ctx = { token };
 
   return {
-    // ...ctx,
-    // login: (token: string) => login(res, token),
-    // logout: () => logout(res),
+    ...ctx,
+    login: (token: string) => login(res, token),
+    logout: () => logout(res),
   };
 }
