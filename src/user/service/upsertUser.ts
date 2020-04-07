@@ -1,4 +1,5 @@
 import * as uuid from 'uuid';
+import * as isValidUuid from 'uuid-validate';
 import * as bcrypt from 'bcrypt';
 import { Context, User } from '../types';
 import * as store from '../store';
@@ -9,7 +10,15 @@ interface Input {
   password?: string;
 }
 export async function upsertUser(ctx: Context, input: Input) {
-  const { id } = input;
+  const { id, email } = input;
+
+  if (id && !isValidUuid(id)) {
+    throw new Error(`${id} is not a valid uuid`);
+  }
+
+  if (email && !isValidEmailAddress(email)) {
+    throw new Error(`${email} is not a valid email address`);
+  }
 
   const { user: existingUser } = await store.getUser(ctx, { id });
 
@@ -62,4 +71,8 @@ async function updateUser(ctx: Context, input: Input, existingUser: User) {
 async function encryptPassword(password: string) {
   const saltRounds = 10;
   return bcrypt.hash(password, saltRounds);
+}
+
+function isValidEmailAddress(s: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 }

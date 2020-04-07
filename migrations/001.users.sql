@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT,
   encrypted_password TEXT
 );
-CREATE INDEX ON users (email);
+CREATE UNIQUE INDEX ON users (email);
