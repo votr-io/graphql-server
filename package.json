@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "generate": "gql-gen",
+    "generate:tests": "gql-gen --config ./src/tests/graphql/codegen.yml",
     "dev": "nodemon",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run generate && tsc"
@@ -14,22 +15,30 @@
   "license": "ISC",
   "devDependencies": {
     "@graphql-codegen/cli": "^1.13.1",
+    "@graphql-codegen/typescript-graphql-request": "^1.13.2",
+    "@graphql-codegen/typescript-operations": "^1.13.2",
     "@graphql-codegen/typescript-resolvers": "^1.13.1",
+    "@types/bcrypt": "^3.0.0",
     "@types/cookie": "^0.3.3",
     "@types/cookie-parser": "^1.4.2",
     "@types/express": "^4.17.3",
+    "@types/jest": "^25.2.1",
     "@types/lodash": "^4.14.149",
     "@types/node": "^13.9.2",
     "@types/pino": "^5.17.0",
     "@types/slonik": "^22.1.2",
+    "@types/uuid": "^7.0.2",
     "dotenv": "^8.2.0",
+    "jest": "^25.2.7",
     "nodemon": "^2.0.2",
     "pino-pretty": "^3.6.1",
+    "ts-jest": "^25.3.1",
     "ts-node": "^8.7.0",
     "typescript": "^3.8.3"
   },
   "dependencies": {
     "apollo-server-express": "^2.11.0",
+    "bcrypt": "^4.0.1",
     "cookie": "^0.4.0",
     "cookie-parser": "^1.4.5",
     "express": "^4.17.1",
@@ -38,7 +47,8 @@
     "marv": "^3.1.0",
     "marv-pg-driver": "^3.0.0",
     "pino": "^5.17.0",
-    "slonik": "^22.4.4"
+    "slonik": "^22.4.4",
+    "uuid": "^7.0.3"
   },
   "prettier": {
     "singleQuote": true,

@@ -1,5 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql';
 export type Maybe<T> = T | null;
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -288,10 +289,10 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>,
-  User: ResolverTypeWrapper<User>,
+  User: ResolverTypeWrapper<import('../../user/types').User>,
   ID: ResolverTypeWrapper<Scalars['ID']>,
   String: ResolverTypeWrapper<Scalars['String']>,
-  Election: ResolverTypeWrapper<Election>,
+  Election: ResolverTypeWrapper<Omit<Election, 'createdBy'> & { createdBy: ResolversTypes['User'] }>,
   Candidate: ResolverTypeWrapper<Candidate>,
   ElectionStatus: ElectionStatus,
   Results: ResolverTypeWrapper<Results>,
@@ -299,17 +300,17 @@ export type ResolversTypes = {
   CandidateVotes: ResolverTypeWrapper<CandidateVotes>,
   Int: ResolverTypeWrapper<Scalars['Int']>,
   Mutation: ResolverTypeWrapper<{}>,
-  LoginOutput: ResolverTypeWrapper<LoginOutput>,
+  LoginOutput: ResolverTypeWrapper<Omit<LoginOutput, 'user'> & { user: ResolversTypes['User'] }>,
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>,
   UpsertUserInput: UpsertUserInput,
-  UpsertUserOutput: ResolverTypeWrapper<UpsertUserOutput>,
+  UpsertUserOutput: ResolverTypeWrapper<Omit<UpsertUserOutput, 'user'> & { user: ResolversTypes['User'] }>,
   UpsertElectionInput: UpsertElectionInput,
   CandidateInput: CandidateInput,
-  UpsertElectionOutput: ResolverTypeWrapper<UpsertElectionOutput>,
+  UpsertElectionOutput: ResolverTypeWrapper<Omit<UpsertElectionOutput, 'election'> & { election: ResolversTypes['Election'] }>,
   StartElectionInput: StartElectionInput,
-  StartElectionOutput: ResolverTypeWrapper<StartElectionOutput>,
+  StartElectionOutput: ResolverTypeWrapper<Omit<StartElectionOutput, 'election'> & { election: ResolversTypes['Election'] }>,
   StopElectionInput: StopElectionInput,
-  StopElectionOutput: ResolverTypeWrapper<StopElectionOutput>,
+  StopElectionOutput: ResolverTypeWrapper<Omit<StopElectionOutput, 'election'> & { election: ResolversTypes['Election'] }>,
   CastBallotInput: CastBallotInput,
   CastBallotOutput: ResolverTypeWrapper<CastBallotOutput>,
 };
@@ -317,10 +318,10 @@ export type ResolversTypes = {
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Query: {},
-  User: User,
+  User: import('../../user/types').User,
   ID: Scalars['ID'],
   String: Scalars['String'],
-  Election: Election,
+  Election: Omit<Election, 'createdBy'> & { createdBy: ResolversParentTypes['User'] },
   Candidate: Candidate,
   ElectionStatus: ElectionStatus,
   Results: Results,
@@ -328,17 +329,17 @@ export type ResolversParentTypes = {
   CandidateVotes: CandidateVotes,
   Int: Scalars['Int'],
   Mutation: {},
-  LoginOutput: LoginOutput,
+  LoginOutput: Omit<LoginOutput, 'user'> & { user: ResolversParentTypes['User'] },
   Boolean: Scalars['Boolean'],
   UpsertUserInput: UpsertUserInput,
-  UpsertUserOutput: UpsertUserOutput,
+  UpsertUserOutput: Omit<UpsertUserOutput, 'user'> & { user: ResolversParentTypes['User'] },
   UpsertElectionInput: UpsertElectionInput,
   CandidateInput: CandidateInput,
-  UpsertElectionOutput: UpsertElectionOutput,
+  UpsertElectionOutput: Omit<UpsertElectionOutput, 'election'> & { election: ResolversParentTypes['Election'] },
   StartElectionInput: StartElectionInput,
-  StartElectionOutput: StartElectionOutput,
+  StartElectionOutput: Omit<StartElectionOutput, 'election'> & { election: ResolversParentTypes['Election'] },
   StopElectionInput: StopElectionInput,
-  StopElectionOutput: StopElectionOutput,
+  StopElectionOutput: Omit<StopElectionOutput, 'election'> & { election: ResolversParentTypes['Election'] },
   CastBallotInput: CastBallotInput,
   CastBallotOutput: CastBallotOutput,
 };

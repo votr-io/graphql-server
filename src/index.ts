@@ -5,6 +5,8 @@ import { logger } from './logger';
 import { CONFIG } from './config';
 import { server } from './GraphQL';
 import { migrate } from './postgres';
+import { upsertUser } from './user/service';
+import * as uuid from 'uuid';
 
 /**
  * This is the main entry point for our server.
@@ -35,6 +37,17 @@ import { migrate } from './postgres';
   logger.info('starting up!');
 
   await migrate();
+
+  const test = await upsertUser(
+    {},
+    {
+      id: uuid.v4(),
+      email: 'asdf',
+      password: 'boggle',
+    }
+  );
+
+  console.log(test);
 
   const app = express();
   app.use(cookieParser());
