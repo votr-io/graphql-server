@@ -48,7 +48,7 @@ describe('authentication', () => {
 
     //we need to create a new user that is isolated to this test
     await sdk.upsertUser({ input: { id, email, password } });
-    //we're testing loging in here, so we need to logout after creating the user
+    //we're testing logging in here, so we need to logout after creating the user
     await sdk.logout();
 
     //confirm that we are not logged in

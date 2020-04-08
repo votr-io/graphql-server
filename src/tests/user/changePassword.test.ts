@@ -1,4 +1,3 @@
-import * as uuid from 'uuid';
 import { sdk } from '../graphql/sdk';
 import { createUserAndLogin } from './util';
 
