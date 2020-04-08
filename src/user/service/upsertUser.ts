@@ -63,6 +63,11 @@ async function createUser(ctx: Context, input: Input) {
 
 async function updateUser(ctx: Context, input: Input, existingUser: User) {
   const { email, password } = input;
+  const claims = tokens.validateUserAccessToken(ctx.token);
+
+  if (claims.id !== existingUser.id) {
+    throw new Error('not authorized');
+  }
 
   let encryptedPassword =
     (await encryptPassword(password)) || existingUser.encryptedPassword;

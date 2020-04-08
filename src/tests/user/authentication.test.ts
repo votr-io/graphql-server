@@ -1,9 +1,8 @@
 import * as uuid from 'uuid';
-import { newSdk, sdk } from '../graphql/sdk';
+import { sdk } from '../graphql/sdk';
 
 describe('authentication', () => {
   it('returns nothing for self if the user is not logged in', async () => {
-    const sdk = newSdk();
     const { self } = await sdk.self();
     expect(self).toBeNull();
   });
@@ -27,6 +26,19 @@ describe('authentication', () => {
 
     const { self: selfAfterLogout } = await sdk.self();
     expect(selfAfterLogout).toBeNull();
+  });
+
+  it('fails if you try to login with a bad password', async () => {
+    const id = uuid.v4();
+    const email = `${uuid.v4()}@test.com`;
+    const password = 'boggle';
+
+    await sdk.upsertUser({ input: { id, email, password } });
+    await sdk.logout();
+
+    await expect(
+      sdk.login({ email, password: 'not the correct password' })
+    ).rejects.toThrow();
   });
 
   it('can login and logout', async () => {
