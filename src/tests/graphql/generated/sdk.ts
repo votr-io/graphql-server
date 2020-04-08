@@ -202,6 +202,31 @@ export type User = {
   elections: Array<Election>;
 };
 
+export type LoginMutationVariables = {
+  email: Scalars['String'];
+  password: Scalars['String'];
+};
+
+
+export type LoginMutation = (
+  { __typename?: 'Mutation' }
+  & { login: (
+    { __typename?: 'LoginOutput' }
+    & { user: (
+      { __typename?: 'User' }
+      & Pick<User, 'id' | 'email'>
+    ) }
+  ) }
+);
+
+export type LogoutMutationVariables = {};
+
+
+export type LogoutMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'logout'>
+);
+
 export type UpsertUserMutationVariables = {
   input: UpsertUserInput;
 };
@@ -230,6 +255,21 @@ export type SelfQuery = (
 );
 
 
+export const LoginDocument = gql`
+    mutation login($email: String!, $password: String!) {
+  login(email: $email, password: $password) {
+    user {
+      id
+      email
+    }
+  }
+}
+    `;
+export const LogoutDocument = gql`
+    mutation logout {
+  logout
+}
+    `;
 export const UpsertUserDocument = gql`
     mutation upsertUser($input: UpsertUserInput!) {
   upsertUser(input: $input) {
@@ -255,6 +295,12 @@ export type SdkFunctionWrapper = <T>(action: () => Promise<T>) => Promise<T>;
 const defaultWrapper: SdkFunctionWrapper = sdkFunction => sdkFunction();
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+    login(variables: LoginMutationVariables): Promise<LoginMutation> {
+      return withWrapper(() => client.request<LoginMutation>(print(LoginDocument), variables));
+    },
+    logout(variables?: LogoutMutationVariables): Promise<LogoutMutation> {
+      return withWrapper(() => client.request<LogoutMutation>(print(LogoutDocument), variables));
+    },
     upsertUser(variables: UpsertUserMutationVariables): Promise<UpsertUserMutation> {
       return withWrapper(() => client.request<UpsertUserMutation>(print(UpsertUserDocument), variables));
     },

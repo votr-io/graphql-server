@@ -5,9 +5,6 @@ import { logger } from './logger';
 import { CONFIG } from './config';
 import { server } from './GraphQL';
 import { migrate } from './postgres';
-import { upsertUser } from './user/service';
-import * as uuid from 'uuid';
-import { listUsers, getUser } from './user/store';
 
 /**
  * This is the main entry point for our server.

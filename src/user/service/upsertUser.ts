@@ -3,13 +3,20 @@ import * as isValidUuid from 'uuid-validate';
 import * as bcrypt from 'bcrypt';
 import { Context, User } from '../types';
 import * as store from '../store';
+import * as tokens from '../../tokens';
 
 interface Input {
   id?: string;
   email?: string;
   password?: string;
 }
-export async function upsertUser(ctx: Context, input: Input) {
+
+interface Output {
+  user: User;
+  token: string;
+}
+
+export async function upsertUser(ctx: Context, input: Input): Promise<Output> {
   const { id, email } = input;
 
   if (id && !isValidUuid(id)) {
@@ -20,7 +27,7 @@ export async function upsertUser(ctx: Context, input: Input) {
     throw new Error(`${email} is not a valid email address`);
   }
 
-  const { user: existingUser } = await store.getUser(ctx, { id });
+  const existingUser = id ? await store.getUserById(ctx, id) : null;
 
   const user = existingUser
     ? await updateUser(ctx, input, existingUser)
@@ -28,7 +35,9 @@ export async function upsertUser(ctx: Context, input: Input) {
 
   await store.upsertUser(ctx, user);
 
-  return { user };
+  const token = tokens.createUserAccessToken(user);
+
+  return { user, token };
 }
 
 async function createUser(ctx: Context, input: Input) {

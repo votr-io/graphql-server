@@ -74,7 +74,7 @@ function buildWhereClause(input: Input): Sql {
   }
 
   if (filters.emails) {
-    whereParts.push(sql`id = ANY(${sql.array(filters.emails, 'text')})`);
+    whereParts.push(sql`email = ANY(${sql.array(filters.emails, 'text')})`);
   }
 
   return whereParts.length > 0 ? sql`WHERE ${sql.join(whereParts, sql` AND `)}` : sql``;

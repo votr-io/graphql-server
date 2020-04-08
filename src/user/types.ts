@@ -1,4 +1,6 @@
-export interface Context {}
+export interface Context {
+  token?: string;
+}
 
 export interface User {
   id: string;

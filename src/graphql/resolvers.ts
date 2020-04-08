@@ -3,20 +3,11 @@ import { Context } from './context';
 import * as userService from '../user/service';
 import { service as electionService } from '../election/service';
 import * as types from '../election/types';
-import { createUserAccessToken, validateUserAccessToken } from '../tokens';
-import { getUser } from '../user/store';
 
 export const resolvers: Resolvers<Context> = {
   Query: {
     self: async (_, args, ctx) => {
-      const { token } = ctx;
-
-      if (!token) {
-        return null;
-      }
-      const { id } = validateUserAccessToken(token);
-
-      const { user } = await getUser(ctx, { id });
+      const { user } = await userService.self(ctx, {});
       return user;
     },
     election: async (_, args, ctx) => {
@@ -24,16 +15,18 @@ export const resolvers: Resolvers<Context> = {
     },
   },
   Mutation: {
+    login: async (_, args, ctx) => {
+      const { user, token } = await userService.login(ctx, args);
+      ctx.login(token);
+      return { user };
+    },
     logout: (_, __, ctx) => {
       ctx.logout();
       return true;
     },
     upsertUser: async (_, args, ctx) => {
-      const { user } = await userService.upsertUser(ctx, args.input);
-
-      const token = createUserAccessToken(user);
+      const { user, token } = await userService.upsertUser(ctx, args.input);
       ctx.login(token);
-
       return { user };
     },
     upsertElection: async (_, args, ctx) => {
