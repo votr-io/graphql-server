@@ -3,7 +3,7 @@ import * as cookieParser from 'cookie-parser';
 
 import { logger } from './logger';
 import { CONFIG } from './config';
-import { server } from './GraphQL';
+import { server } from './graphql';
 import { migrate } from './postgres';
 
 /**
