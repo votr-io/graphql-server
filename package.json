@@ -8,7 +8,9 @@
     "generate:tests": "gql-gen --config ./src/tests/graphql/codegen.yml",
     "dev": "nodemon",
     "test": "jest --watch --runInBand",
-    "build": "npm run generate && tsc"
+    "postinstall": "npm run build",
+    "build": "tsc",
+    "start": "node build/index.js"
   },
   "keywords": [],
   "author": "",
