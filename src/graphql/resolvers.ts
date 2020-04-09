@@ -1,8 +1,7 @@
-import { Resolvers, ElectionStatus, Election } from './generated/resolvers';
+import { Resolvers, ElectionStatus } from './generated/resolvers';
 import { Context } from './context';
 import * as userService from '../user/service';
 import * as electionService from '../election/service';
-import * as types from '../election/types';
 
 export const resolvers: Resolvers<Context> = {
   Query: {
@@ -11,7 +10,8 @@ export const resolvers: Resolvers<Context> = {
       return user;
     },
     election: async (_, args, ctx) => {
-      throw new Error('not implemented yet');
+      const { election } = await electionService.getElection(ctx, args);
+      return election;
     },
   },
   Mutation: {

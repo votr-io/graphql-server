@@ -55,9 +55,9 @@ export type CastBallotOutput = {
 export type Election = {
    __typename?: 'Election';
   id: Scalars['ID'];
+  createdBy: User;
   name: Scalars['String'];
   description: Scalars['String'];
-  createdBy: User;
   candidates: Array<Candidate>;
   status: ElectionStatus;
   results?: Maybe<Results>;
@@ -264,6 +264,26 @@ export type UpsertUserMutation = (
   ) }
 );
 
+export type GetElectionQueryVariables = {
+  id: Scalars['ID'];
+};
+
+
+export type GetElectionQuery = (
+  { __typename?: 'Query' }
+  & { election?: Maybe<(
+    { __typename?: 'Election' }
+    & Pick<Election, 'id' | 'name' | 'description' | 'status'>
+    & { createdBy: (
+      { __typename?: 'User' }
+      & Pick<User, 'id' | 'email'>
+    ), candidates: Array<(
+      { __typename?: 'Candidate' }
+      & Pick<Candidate, 'id' | 'name' | 'description'>
+    )> }
+  )> }
+);
+
 export type SelfQueryVariables = {};
 
 
@@ -322,6 +342,25 @@ export const UpsertUserDocument = gql`
   }
 }
     `;
+export const GetElectionDocument = gql`
+    query getElection($id: ID!) {
+  election(id: $id) {
+    id
+    name
+    description
+    createdBy {
+      id
+      email
+    }
+    candidates {
+      id
+      name
+      description
+    }
+    status
+  }
+}
+    `;
 export const SelfDocument = gql`
     query self {
   self {
@@ -348,6 +387,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     upsertUser(variables: UpsertUserMutationVariables): Promise<UpsertUserMutation> {
       return withWrapper(() => client.request<UpsertUserMutation>(print(UpsertUserDocument), variables));
+    },
+    getElection(variables: GetElectionQueryVariables): Promise<GetElectionQuery> {
+      return withWrapper(() => client.request<GetElectionQuery>(print(GetElectionDocument), variables));
     },
     self(variables?: SelfQueryVariables): Promise<SelfQuery> {
       return withWrapper(() => client.request<SelfQuery>(print(SelfDocument), variables));

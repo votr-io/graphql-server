@@ -61,8 +61,8 @@ function parseRow(row: Row): Election {
     name: row.name,
     description: row.description,
     status: row.status as Election['status'],
-    candidates: JSON.parse(row.candidates),
-    results: JSON.parse(row.results),
+    candidates: row.candidates,
+    results: row.results,
   };
 }
 
