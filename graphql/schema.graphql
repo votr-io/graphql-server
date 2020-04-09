@@ -1,0 +1,154 @@
+type Query {
+  #you'll need to call this to determine if you are logged in (aka. have cookies set)
+  #User will be null if you are not logged in
+  self: User
+
+  election(id: ID!): Election
+}
+
+type Mutation {
+  ## user stuff
+  #login will set cookie with this users auth info
+  login(email: String!, password: String!): LoginOutput!
+  #logout just clears cookies
+  logout: Boolean
+  #upsertUser will set cookie with this users auth info
+  upsertUser(input: UpsertUserInput!): UpsertUserOutput!
+
+  ##election administration
+  upsertElection(input: UpsertElectionInput!): UpsertElectionOutput!
+  startElection(input: StartElectionInput!): StartElectionOutput!
+  stopElection(input: StopElectionInput!): StopElectionOutput!
+
+  ##voting
+  castBallot(input: CastBallotInput!): CastBallotOutput!
+}
+
+##users
+
+type LoginOutput {
+  user: User!
+}
+
+input UpsertUserInput {
+  id: ID
+  email: String
+  password: String
+}
+type UpsertUserOutput {
+  user: User!
+}
+
+##election admin
+
+input UpsertElectionInput {
+  id: ID
+  name: String!
+  description: String!
+  candidates: [CandidateInput!]!
+}
+input CandidateInput {
+  id: ID
+  name: String!
+  description: String!
+}
+type UpsertElectionOutput {
+  election: Election!
+}
+
+input StartElectionInput {
+  electionId: ID!
+}
+type StartElectionOutput {
+  election: Election!
+}
+
+input StopElectionInput {
+  electionId: ID!
+}
+type StopElectionOutput {
+  election: Election!
+}
+
+##voting
+input CastBallotInput {
+  electionId: ID!
+  candidateIds: [ID!]!
+}
+
+type CastBallotOutput {
+  _: Boolean
+}
+
+##types
+
+type User {
+  id: ID!
+  email: String # null if the user is not authorized to see this
+  elections: [Election!]! #elections that this user has created
+}
+
+"""
+Possible statuses an election can be in.
+Transitions only go in one direction.  There's no going back.
+"""
+enum ElectionStatus {
+  SETUP
+  OPEN
+  TALLYING
+  CLOSED
+}
+
+"""
+An election.
+"""
+type Election {
+  id: ID!
+  createdBy: User!
+  name: String!
+  description: String!
+  candidates: [Candidate!]!
+  status: ElectionStatus!
+  results: Results
+}
+
+"""
+A candidate in a specific election.
+"""
+type Candidate {
+  id: ID!
+  name: String!
+  description: String!
+}
+
+"""
+The winner of the election and all of the data needed to show how the election was won.
+"""
+type Results {
+  winner: Candidate!
+  replay: [Round!]!
+}
+
+"""
+Information about a specific round of an election.
+If this is the final round of the election, redistribution will be null,
+  candidateTotals - the number of votes each candidate is awarded this round
+  redistribution - the number of votes being redistributed to each candidate (does not include the last place candidate for this round)
+"""
+type Round {
+  candidateTotals: [CandidateVotes!]!
+  redistribution: [CandidateVotes]
+}
+
+"""
+Votes associated with a candidate.
+Can be used for:
+  - number of votes a candidate recieved in a round
+  - number of votes being redistributed to a candidate in the event there's more than one round
+
+Note: if canditate is null, that means that these votes no longer have a valid candidate to count towards (all the candidates on these ballots have been dropped from the election due to being in last place in previous rounds)
+"""
+type CandidateVotes {
+  candidate: Candidate
+  votes: Int!
+}

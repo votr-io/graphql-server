@@ -1,5 +1,0 @@
-mutation WeakLogin($adminToken: String!) {
-  weakLogin(input: { adminToken: $adminToken }) {
-    accessToken
-  }
-}

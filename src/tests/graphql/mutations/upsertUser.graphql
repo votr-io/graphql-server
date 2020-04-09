@@ -1,0 +1,8 @@
+mutation upsertUser($input: UpsertUserInput!) {
+  upsertUser(input: $input) {
+    user {
+      id
+      email
+    }
+  }
+}

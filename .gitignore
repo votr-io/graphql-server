@@ -1,6 +1,8 @@
+.DS_Store
 .vscode
-node_modules
 .idea
+
+node_modules
 build
+
 .env
-database.json
