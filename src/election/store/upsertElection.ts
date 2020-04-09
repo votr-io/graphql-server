@@ -1,24 +1,28 @@
-import { Election, PageInfo, Status } from '../types';
-import { Context } from '../../context';
-import { last, first } from 'lodash';
-import { encode, decode } from './cursor';
-import { CONFIG } from '../../config';
 import { sql } from 'slonik';
-import { pool, Sql } from '../../postgres';
+import { Election, Context } from '../types';
+import { pool } from '../../postgres';
 
-export interface Input {
-  election: Election;
-}
+export async function upsertElection(ctx: Context, election: Election) {
+  const { id, createdBy, name, description, status } = election;
+  const dateCreated = election.dateCreated.toISOString();
+  const dateUpdated = election.dateUpdated.toISOString();
+  const candidates = JSON.stringify(election.candidates);
+  const results = election.results ? JSON.stringify(election.results) : null;
 
-export interface Output {}
-
-export async function listElections(ctx: Context, input: Input): Promise<Output> {
   const query = sql`
-  SELECT * 
-  FROM elections;
-  `;
+    INSERT INTO elections (id, date_created, date_updated, created_by, name, description, candidates, status, results)
+    VALUES (${id}, ${dateCreated}, ${dateUpdated}, ${createdBy}, ${name}, ${description}, ${candidates}, ${status}, ${results})
+    ON CONFLICT (id)
+    DO UPDATE SET   date_created  = ${dateCreated},
+                    date_updated  = ${dateUpdated},
+                    created_by    = ${createdBy},
+                    name          = ${name},
+                    description   = ${description},
+                    candidates    = ${candidates},
+                    status        = ${status},
+                    results       = ${results};
+    
+    `;
 
-  await pool.any(query);
-
-  return {};
+  await pool.query(query);
 }

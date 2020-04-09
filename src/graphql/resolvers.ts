@@ -1,7 +1,7 @@
 import { Resolvers, ElectionStatus, Election } from './generated/resolvers';
 import { Context } from './context';
 import * as userService from '../user/service';
-import { service as electionService } from '../election/service';
+import * as electionService from '../election/service';
 import * as types from '../election/types';
 
 export const resolvers: Resolvers<Context> = {
@@ -30,37 +30,20 @@ export const resolvers: Resolvers<Context> = {
       return { user };
     },
     upsertElection: async (_, args, ctx) => {
-      throw new Error('not implemented yet');
+      const { election } = await electionService.upsertElection(ctx, args.input);
+      return { election };
+    },
+  },
+  Election: {
+    createdBy: ({ createdBy }, _, ctx) => ctx.userDataLoader.load(createdBy),
+    status: ({ status }) => {
+      const mapping = {
+        SETUP: ElectionStatus.Setup,
+        OPEN: ElectionStatus.Open,
+        TALLYING: ElectionStatus.Tallying,
+        CLOSED: ElectionStatus.Closed,
+      };
+      return mapping[status];
     },
   },
 };
-
-function toGqlStatus(status: types.Status): ElectionStatus {
-  const mapping = {
-    [types.Status.SETUP]: ElectionStatus.Setup,
-    [types.Status.OPEN]: ElectionStatus.Open,
-    [types.Status.TALLYING]: ElectionStatus.Tallying,
-    [types.Status.CLOSED]: ElectionStatus.Closed,
-  };
-
-  const ret = mapping[status];
-  if (!ret) {
-    throw new Error(`${status} does not have a mapping set`);
-  }
-
-  return ret;
-}
-
-// function toGqlElection(election?: types.Election): Election {
-//   if (!election) {
-//     return null;
-//   }
-
-//   return {
-//     ...election,
-//     dateCreated: election.dateCreated.toISOString(),
-//     dateUpdated: election.dateUpdated.toISOString(),
-//     status: toGqlStatus(election.status),
-//     results: null, //TODO
-//   };
-// }

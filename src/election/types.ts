@@ -1,22 +1,26 @@
-export enum Status {
-  SETUP = 'SETUP',
-  OPEN = 'OPEN',
-  TALLYING = 'TALLYING',
-  CLOSED = 'CLOSED',
+export interface Context {
+  token?: string;
 }
+
+// export enum Status {
+//   SETUP = 'SETUP',
+//   OPEN = 'OPEN',
+//   TALLYING = 'TALLYING',
+//   CLOSED = 'CLOSED',
+// }
+
+type ElectionStatus = 'SETUP' | 'OPEN' | 'TALLYING' | 'CLOSED';
 
 export interface Election {
   id: string;
   dateCreated: Date;
   dateUpdated: Date;
-  createdByEmail?: string;
+  createdBy: string;
   name: string;
   description: string;
-  status: Status;
   candidates: Candidate[];
+  status: ElectionStatus;
   results?: Results;
-
-  cursor: string;
 }
 export interface Candidate {
   id: string;
@@ -29,8 +33,5 @@ export interface Results {
 }
 
 export interface PageInfo {
-  hasPreviousPage?: boolean;
-  startCursor?: string;
-  hasNextPage?: boolean;
   endCursor?: string;
 }

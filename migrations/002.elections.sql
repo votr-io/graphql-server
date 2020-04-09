@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS elections (
   id TEXT PRIMARY KEY NOT NULL,
   date_created TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc'),
   date_updated TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc'),
-  created_by_email TEXT,
+  created_by TEXT NOT NULL REFERENCES users(id),
   name TEXT NOT NULL,
   description TEXT NOT NULL,
   status TEXT NOT NULL,

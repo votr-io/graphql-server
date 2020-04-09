@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { getToken, login, logout } from './cookies';
+import { newUserDataLoader } from './dataloaders';
 
 export type Context = ReturnType<typeof context>;
 
@@ -23,5 +24,6 @@ export function context({ req, res }: { req: Request; res: Response }) {
     ...ctx,
     login: (token: string) => login(res, token),
     logout: () => logout(res),
+    userDataLoader: newUserDataLoader(ctx),
   };
 }

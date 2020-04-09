@@ -20,7 +20,7 @@ export type Candidate = {
 };
 
 export type CandidateInput = {
-  id: Scalars['ID'];
+  id?: Maybe<Scalars['ID']>;
   name: Scalars['String'];
   description: Scalars['String'];
 };
@@ -58,8 +58,6 @@ export type Election = {
   name: Scalars['String'];
   description: Scalars['String'];
   createdBy: User;
-  dateCreated: Scalars['String'];
-  dateUpdated: Scalars['String'];
   candidates: Array<Candidate>;
   status: ElectionStatus;
   results?: Maybe<Results>;
@@ -173,7 +171,7 @@ export type StopElectionOutput = {
 };
 
 export type UpsertElectionInput = {
-  id: Scalars['ID'];
+  id?: Maybe<Scalars['ID']>;
   name: Scalars['String'];
   description: Scalars['String'];
   candidates: Array<CandidateInput>;
@@ -227,6 +225,29 @@ export type LogoutMutation = (
   & Pick<Mutation, 'logout'>
 );
 
+export type UpsertElectionMutationVariables = {
+  input: UpsertElectionInput;
+};
+
+
+export type UpsertElectionMutation = (
+  { __typename?: 'Mutation' }
+  & { upsertElection: (
+    { __typename?: 'UpsertElectionOutput' }
+    & { election: (
+      { __typename?: 'Election' }
+      & Pick<Election, 'id' | 'name' | 'description' | 'status'>
+      & { createdBy: (
+        { __typename?: 'User' }
+        & Pick<User, 'id' | 'email'>
+      ), candidates: Array<(
+        { __typename?: 'Candidate' }
+        & Pick<Candidate, 'id' | 'name' | 'description'>
+      )> }
+    ) }
+  ) }
+);
+
 export type UpsertUserMutationVariables = {
   input: UpsertUserInput;
 };
@@ -270,6 +291,27 @@ export const LogoutDocument = gql`
   logout
 }
     `;
+export const UpsertElectionDocument = gql`
+    mutation upsertElection($input: UpsertElectionInput!) {
+  upsertElection(input: $input) {
+    election {
+      id
+      name
+      description
+      createdBy {
+        id
+        email
+      }
+      candidates {
+        id
+        name
+        description
+      }
+      status
+    }
+  }
+}
+    `;
 export const UpsertUserDocument = gql`
     mutation upsertUser($input: UpsertUserInput!) {
   upsertUser(input: $input) {
@@ -300,6 +342,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     logout(variables?: LogoutMutationVariables): Promise<LogoutMutation> {
       return withWrapper(() => client.request<LogoutMutation>(print(LogoutDocument), variables));
+    },
+    upsertElection(variables: UpsertElectionMutationVariables): Promise<UpsertElectionMutation> {
+      return withWrapper(() => client.request<UpsertElectionMutation>(print(UpsertElectionDocument), variables));
     },
     upsertUser(variables: UpsertUserMutationVariables): Promise<UpsertUserMutation> {
       return withWrapper(() => client.request<UpsertUserMutation>(print(UpsertUserDocument), variables));

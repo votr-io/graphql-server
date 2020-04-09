@@ -20,7 +20,7 @@ export type Candidate = {
 };
 
 export type CandidateInput = {
-  id: Scalars['ID'];
+  id?: Maybe<Scalars['ID']>;
   name: Scalars['String'];
   description: Scalars['String'];
 };
@@ -55,11 +55,9 @@ export type CastBallotOutput = {
 export type Election = {
    __typename?: 'Election';
   id: Scalars['ID'];
+  createdBy: User;
   name: Scalars['String'];
   description: Scalars['String'];
-  createdBy: User;
-  dateCreated: Scalars['String'];
-  dateUpdated: Scalars['String'];
   candidates: Array<Candidate>;
   status: ElectionStatus;
   results?: Maybe<Results>;
@@ -173,7 +171,7 @@ export type StopElectionOutput = {
 };
 
 export type UpsertElectionInput = {
-  id: Scalars['ID'];
+  id?: Maybe<Scalars['ID']>;
   name: Scalars['String'];
   description: Scalars['String'];
   candidates: Array<CandidateInput>;
@@ -279,7 +277,7 @@ export type ResolversTypes = {
   User: ResolverTypeWrapper<import('../../user/types').User>,
   ID: ResolverTypeWrapper<Scalars['ID']>,
   String: ResolverTypeWrapper<Scalars['String']>,
-  Election: ResolverTypeWrapper<Omit<Election, 'createdBy'> & { createdBy: ResolversTypes['User'] }>,
+  Election: ResolverTypeWrapper<import('../../election/types').Election>,
   Candidate: ResolverTypeWrapper<Candidate>,
   ElectionStatus: ElectionStatus,
   Results: ResolverTypeWrapper<Results>,
@@ -308,7 +306,7 @@ export type ResolversParentTypes = {
   User: import('../../user/types').User,
   ID: Scalars['ID'],
   String: Scalars['String'],
-  Election: Omit<Election, 'createdBy'> & { createdBy: ResolversParentTypes['User'] },
+  Election: import('../../election/types').Election,
   Candidate: Candidate,
   ElectionStatus: ElectionStatus,
   Results: Results,
@@ -351,11 +349,9 @@ export type CastBallotOutputResolvers<ContextType = any, ParentType extends Reso
 
 export type ElectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Election'] = ResolversParentTypes['Election']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
+  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>,
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>,
-  dateCreated?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  dateUpdated?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   candidates?: Resolver<Array<ResolversTypes['Candidate']>, ParentType, ContextType>,
   status?: Resolver<ResolversTypes['ElectionStatus'], ParentType, ContextType>,
   results?: Resolver<Maybe<ResolversTypes['Results']>, ParentType, ContextType>,

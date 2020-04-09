@@ -1,4 +1,4 @@
-import { Election, PageInfo, Status } from '../types';
+import { Election, PageInfo } from '../types';
 import { Context } from '../../context';
 import { last, first } from 'lodash';
 import { encode, decode } from './cursor';
@@ -18,7 +18,6 @@ export interface ElectionFilters {
 
 export interface Output {
   elections: Election[];
-  pageInfo: PageInfo;
 }
 
 export async function listElections(ctx: Context, input: Input): Promise<Output> {
@@ -38,12 +37,6 @@ export async function listElections(ctx: Context, input: Input): Promise<Output>
   const elections = rows.map(parseRow);
   return {
     elections,
-    pageInfo: {
-      endCursor: last(elections) && last(elections).cursor,
-      hasNextPage: elections.length !== 0, //TODO: figure this out
-      hasPreviousPage: undefined, //TODO: figure this out
-      startCursor: first(elections) && first(elections).cursor,
-    },
   };
 }
 
@@ -51,7 +44,7 @@ interface Row {
   id: string;
   date_created: Date;
   date_updated: Date;
-  created_by_email?: string;
+  created_by?: string;
   name: string;
   description: string;
   status: string;
@@ -64,14 +57,12 @@ function parseRow(row: Row): Election {
     id: row.id,
     dateCreated: row.date_created,
     dateUpdated: row.date_updated,
-    createdByEmail: row.created_by_email,
+    createdBy: row.created_by,
     name: row.name,
     description: row.description,
-    status: row.status as Status,
+    status: row.status as Election['status'],
     candidates: JSON.parse(row.candidates),
     results: JSON.parse(row.results),
-
-    cursor: encode({ id: row.id }),
   };
 }
 

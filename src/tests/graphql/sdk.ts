@@ -4,7 +4,6 @@ import { getSdk } from './generated/sdk';
 //this nonsense is to get cookies to work in our tests
 import * as IsomorphicFetch from 'real-isomorphic-fetch';
 import * as fetch from 'node-fetch';
-
 global['fetch'] = new IsomorphicFetch(fetch);
 
 const url = 'http://localhost:5000/graphql';

@@ -42,13 +42,13 @@ type UpsertUserOutput {
 ##election admin
 
 input UpsertElectionInput {
-  id: ID!
+  id: ID
   name: String!
   description: String!
   candidates: [CandidateInput!]!
 }
 input CandidateInput {
-  id: ID!
+  id: ID
   name: String!
   description: String!
 }
@@ -104,11 +104,9 @@ An election.
 """
 type Election {
   id: ID!
+  createdBy: User!
   name: String!
   description: String!
-  createdBy: User!
-  dateCreated: String!
-  dateUpdated: String!
   candidates: [Candidate!]!
   status: ElectionStatus!
   results: Results
