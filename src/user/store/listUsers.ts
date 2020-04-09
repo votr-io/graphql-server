@@ -1,4 +1,4 @@
-import { User } from '../types';
+import { User } from './types';
 import { Context } from '../../context';
 import { CONFIG } from '../../config';
 import { sql } from 'slonik';

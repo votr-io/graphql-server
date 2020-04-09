@@ -1,7 +1,7 @@
 import * as DataLoader from 'dataloader';
 import * as service from '../../user/service';
 import { Context } from '../../context';
-import { User } from '../../user/types';
+import { User } from '../../user/service/types';
 import { keyById } from '../../util';
 
 export function newUserDataLoader(ctx: Context) {

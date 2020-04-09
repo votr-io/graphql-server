@@ -38,7 +38,7 @@ describe('getting an election', () => {
     await sdk.logout();
     const { election } = await sdk.getElection({ id });
 
-    expect(election.createdBy.email).toBeFalsy();
+    expect(election.createdBy.email).toBeNull();
     expect(election.name).toEqual(upsertElectionResponse.upsertElection.election.name);
     expect(election.description).toEqual(
       upsertElectionResponse.upsertElection.election.description

@@ -1,4 +1,5 @@
-import { Context, User } from '../types';
+import { User as StoreUser } from '../store/types';
+import { Context, User } from './types';
 import * as store from '../store';
 import * as tokens from '../../tokens';
 

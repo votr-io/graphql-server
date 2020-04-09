@@ -1,4 +1,5 @@
-import { Context, User } from '../types';
+import { User as StoreUser } from '../store/types';
+import { Context, User } from './types';
 import * as store from '../store';
 import * as tokens from '../../tokens';
 
@@ -23,7 +24,7 @@ export async function listUsers(ctx: Context, input: Input): Promise<Output> {
   return {
     users: users.map((user) => ({
       ...user,
-      email: user.id === id ? user.email : '',
+      email: user.id === id ? user.email : null,
     })),
   };
 }

@@ -1,7 +1,8 @@
 import * as uuid from 'uuid';
 import * as isValidUuid from 'uuid-validate';
 import * as bcrypt from 'bcrypt';
-import { Context, User } from '../types';
+import { User as StoreUser } from '../store/types';
+import { Context, User } from './types';
 import * as store from '../store';
 import * as tokens from '../../tokens';
 
@@ -50,7 +51,7 @@ async function createUser(ctx: Context, input: Input) {
   const encryptedPassword = await encryptPassword(password);
 
   const now = new Date();
-  const user: User = {
+  const user: StoreUser = {
     id: id || uuid.v4(),
     dateCreated: now,
     dateUpdated: now,
@@ -61,7 +62,7 @@ async function createUser(ctx: Context, input: Input) {
   return user;
 }
 
-async function updateUser(ctx: Context, input: Input, existingUser: User) {
+async function updateUser(ctx: Context, input: Input, existingUser: StoreUser) {
   const { email, password } = input;
   const claims = tokens.validateUserAccessToken(ctx.token);
 
@@ -72,7 +73,7 @@ async function updateUser(ctx: Context, input: Input, existingUser: User) {
   let encryptedPassword =
     (await encryptPassword(password)) || existingUser.encryptedPassword;
 
-  const user: User = {
+  const user: StoreUser = {
     ...existingUser,
     dateUpdated: new Date(),
     email: email || existingUser.email,

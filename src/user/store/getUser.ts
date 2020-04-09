@@ -1,4 +1,4 @@
-import { User } from '../types';
+import { User } from './types';
 import { Context } from '../../context';
 import { listUsers } from './listUsers';
 

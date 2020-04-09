@@ -274,7 +274,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>,
-  User: ResolverTypeWrapper<import('../../user/types').User>,
+  User: ResolverTypeWrapper<import('../../user/service/types').User>,
   ID: ResolverTypeWrapper<Scalars['ID']>,
   String: ResolverTypeWrapper<Scalars['String']>,
   Election: ResolverTypeWrapper<import('../../election/types').Election>,
@@ -303,7 +303,7 @@ export type ResolversTypes = {
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Query: {},
-  User: import('../../user/types').User,
+  User: import('../../user/service/types').User,
   ID: Scalars['ID'],
   String: Scalars['String'],
   Election: import('../../election/types').Election,

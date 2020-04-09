@@ -5,7 +5,7 @@ generates:
   ./src/GraphQL/generated/resolvers.ts:
     config:
       mappers:
-        User: import('../../user/types').User
+        User: import('../../user/service/types').User
         Election: import('../../election/types').Election
     plugins:
       - typescript

@@ -1,5 +1,5 @@
 import { sql } from 'slonik';
-import { User, Context } from '../types';
+import { User, Context } from './types';
 import { pool } from '../../postgres';
 
 export async function upsertUser(ctx: Context, user: User) {
