@@ -225,6 +225,29 @@ export type LogoutMutation = (
   & Pick<Mutation, 'logout'>
 );
 
+export type StartElectionMutationVariables = {
+  input: StartElectionInput;
+};
+
+
+export type StartElectionMutation = (
+  { __typename?: 'Mutation' }
+  & { startElection: (
+    { __typename?: 'StartElectionOutput' }
+    & { election: (
+      { __typename?: 'Election' }
+      & Pick<Election, 'id' | 'name' | 'description' | 'status'>
+      & { createdBy: (
+        { __typename?: 'User' }
+        & Pick<User, 'id' | 'email'>
+      ), candidates: Array<(
+        { __typename?: 'Candidate' }
+        & Pick<Candidate, 'id' | 'name' | 'description'>
+      )> }
+    ) }
+  ) }
+);
+
 export type UpsertElectionMutationVariables = {
   input: UpsertElectionInput;
 };
@@ -311,6 +334,27 @@ export const LogoutDocument = gql`
   logout
 }
     `;
+export const StartElectionDocument = gql`
+    mutation startElection($input: StartElectionInput!) {
+  startElection(input: $input) {
+    election {
+      id
+      name
+      description
+      createdBy {
+        id
+        email
+      }
+      candidates {
+        id
+        name
+        description
+      }
+      status
+    }
+  }
+}
+    `;
 export const UpsertElectionDocument = gql`
     mutation upsertElection($input: UpsertElectionInput!) {
   upsertElection(input: $input) {
@@ -381,6 +425,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     logout(variables?: LogoutMutationVariables): Promise<LogoutMutation> {
       return withWrapper(() => client.request<LogoutMutation>(print(LogoutDocument), variables));
+    },
+    startElection(variables: StartElectionMutationVariables): Promise<StartElectionMutation> {
+      return withWrapper(() => client.request<StartElectionMutation>(print(StartElectionDocument), variables));
     },
     upsertElection(variables: UpsertElectionMutationVariables): Promise<UpsertElectionMutation> {
       return withWrapper(() => client.request<UpsertElectionMutation>(print(UpsertElectionDocument), variables));

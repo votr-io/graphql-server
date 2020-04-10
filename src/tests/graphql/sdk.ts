@@ -7,6 +7,7 @@ import * as fetch from 'node-fetch';
 global['fetch'] = new IsomorphicFetch(fetch);
 
 const url = 'http://localhost:5000/graphql';
+// const url = 'https://votr-graphql.herokuapp.com/graphql';
 
 export type Sdk = ReturnType<typeof getSdk>;
 

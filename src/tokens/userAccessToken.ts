@@ -4,11 +4,10 @@ import { pick } from 'lodash';
 
 export interface Claims {
   id: string;
-  email: string;
 }
 
 export function createUserAccessToken(claims: Claims) {
-  return jwt.sign(pick(claims, 'id', 'email'), CONFIG.TOKEN_SECRET);
+  return jwt.sign(pick(claims, 'id'), CONFIG.TOKEN_SECRET);
 }
 
 export function validateUserAccessToken(token: string): Claims {
