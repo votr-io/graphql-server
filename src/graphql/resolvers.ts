@@ -5,16 +5,26 @@ import * as electionService from '../election/service';
 
 export const resolvers: Resolvers<Context> = {
   Query: {
+    /**
+     * user
+     */
     self: async (_, args, ctx) => {
       const { user } = await userService.self(ctx, {});
       return user;
     },
+
+    /**
+     * election
+     */
     election: async (_, args, ctx) => {
       const { election } = await electionService.getElection(ctx, args);
       return election;
     },
   },
   Mutation: {
+    /**
+     * user
+     */
     login: async (_, args, ctx) => {
       const { user, token } = await userService.login(ctx, args);
       ctx.login(token);
@@ -29,8 +39,18 @@ export const resolvers: Resolvers<Context> = {
       ctx.login(token);
       return { user };
     },
+
+    /**
+     * election
+     */
     upsertElection: async (_, args, ctx) => {
       const { election } = await electionService.upsertElection(ctx, args.input);
+      return { election };
+    },
+    startElection: async (_, args, ctx) => {
+      const { election } = await electionService.startElection(ctx, {
+        id: args.input.electionId,
+      });
       return { election };
     },
   },
