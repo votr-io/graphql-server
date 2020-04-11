@@ -1,4 +1,4 @@
-import * as stream from 'stream';
+import { Transform, Readable } from 'stream';
 import { sql } from 'slonik';
 import { Context, Ballot } from '../types';
 import { pool } from '../../postgres';
@@ -9,8 +9,8 @@ interface Row {
   candidate_ids: any;
 }
 
-export function getBallotStream(ctx: Context, electionId: string) {
-  const ret = new stream.Transform({
+export function getBallotStream(ctx: Context, electionId: string): Readable {
+  const ret = new Transform({
     objectMode: true,
     transform: (data, _, cb) => cb(null, parseRow(data.row)),
   });

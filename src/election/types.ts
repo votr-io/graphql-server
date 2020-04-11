@@ -28,7 +28,17 @@ export interface Ballot {
 }
 
 export interface Results {
-  //TODO
+  winner: string;
+  rounds: Round[];
+}
+
+export interface Round {
+  candidateTotals: CandidateVotes[];
+}
+
+export interface CandidateVotes {
+  candidateId: string;
+  votes: number;
 }
 
 export interface PageInfo {
