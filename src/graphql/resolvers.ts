@@ -53,6 +53,12 @@ export const resolvers: Resolvers<Context> = {
       });
       return { election };
     },
+    stopElection: async (_, args, ctx) => {
+      const { election } = await electionService.stopElection(ctx, {
+        id: args.input.electionId,
+      });
+      return { election };
+    },
   },
   Election: {
     createdBy: ({ createdBy }, _, ctx) => ctx.userDataLoader.load(createdBy),
