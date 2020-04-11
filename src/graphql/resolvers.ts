@@ -2,6 +2,7 @@ import { Resolvers, ElectionStatus } from './generated/resolvers';
 import { Context } from './context';
 import * as userService from '../user/service';
 import * as electionService from '../election/service';
+import { keyById } from '../util';
 
 export const resolvers: Resolvers<Context> = {
   Query: {
@@ -74,6 +75,28 @@ export const resolvers: Resolvers<Context> = {
         CLOSED: ElectionStatus.Closed,
       };
       return mapping[status];
+    },
+    results: ({ candidates, results }, _, ctx) => {
+      if (!results) {
+        return null;
+      }
+
+      const candidatesById = keyById(candidates);
+
+      const winner = candidatesById[results.winner];
+      const rounds = results.rounds.map((round) => {
+        return {
+          candidateTotals: round.candidateTotals.map((candidateTotal) => ({
+            candidate: candidatesById[candidateTotal.candidateId],
+            votes: candidateTotal.votes,
+          })),
+        };
+      });
+
+      return {
+        winner,
+        rounds,
+      };
     },
   },
 };

@@ -29,7 +29,7 @@ export async function getResults({
 }: {
   getBallotStream: () => Readable;
   errorOnInvalidBallot?: boolean;
-}): Promise<ElectionResults> {
+}): Promise<ElectionResults | null> {
   const rounds: Round[] = [];
   const losingCandidates: string[] = [];
   let winner: string = null;
@@ -51,6 +51,11 @@ export async function getResults({
         round[candidate] = 0;
       }
       round[candidate]++;
+    }
+
+    if (Object.keys(round).length === 0) {
+      //there are no ballots, we're done here
+      return null;
     }
 
     // const round = await fetchBallots()

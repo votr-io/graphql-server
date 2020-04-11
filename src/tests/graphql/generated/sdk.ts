@@ -140,7 +140,7 @@ export type QueryElectionArgs = {
 export type Results = {
    __typename?: 'Results';
   winner: Candidate;
-  replay: Array<Round>;
+  rounds: Array<Round>;
 };
 
 /**
@@ -310,7 +310,7 @@ export type UpsertElectionMutation = (
         & { winner: (
           { __typename?: 'Candidate' }
           & Pick<Candidate, 'id' | 'name' | 'description'>
-        ), replay: Array<(
+        ), rounds: Array<(
           { __typename?: 'Round' }
           & { candidateTotals: Array<(
             { __typename?: 'CandidateVotes' }
@@ -370,7 +370,7 @@ export type GetElectionQuery = (
       & { winner: (
         { __typename?: 'Candidate' }
         & Pick<Candidate, 'id' | 'name' | 'description'>
-      ), replay: Array<(
+      ), rounds: Array<(
         { __typename?: 'Round' }
         & { candidateTotals: Array<(
           { __typename?: 'CandidateVotes' }
@@ -491,7 +491,7 @@ export const UpsertElectionDocument = gql`
           name
           description
         }
-        replay {
+        rounds {
           candidateTotals {
             candidate {
               id
@@ -546,7 +546,7 @@ export const GetElectionDocument = gql`
         name
         description
       }
-      replay {
+      rounds {
         candidateTotals {
           candidate {
             id

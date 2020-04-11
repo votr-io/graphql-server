@@ -140,7 +140,7 @@ export type QueryElectionArgs = {
 export type Results = {
    __typename?: 'Results';
   winner: Candidate;
-  replay: Array<Round>;
+  rounds: Array<Round>;
 };
 
 /**
@@ -386,7 +386,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type ResultsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Results'] = ResolversParentTypes['Results']> = {
   winner?: Resolver<ResolversTypes['Candidate'], ParentType, ContextType>,
-  replay?: Resolver<Array<ResolversTypes['Round']>, ParentType, ContextType>,
+  rounds?: Resolver<Array<ResolversTypes['Round']>, ParentType, ContextType>,
   __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 

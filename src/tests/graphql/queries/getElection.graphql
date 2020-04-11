@@ -19,7 +19,7 @@ query getElection($id: ID!) {
         name
         description
       }
-      replay {
+      rounds {
         candidateTotals {
           candidate {
             id

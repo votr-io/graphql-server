@@ -3,6 +3,7 @@ import * as store from '../store';
 import * as tokens from '../../tokens';
 import * as altVote from '../../lib/alt-vote';
 import { getBallotStream } from '../store/getBallotStream';
+import { Transform } from 'stream';
 
 interface Input {
   id: string;
@@ -62,8 +63,20 @@ export async function stopElection(ctx: Context, input: Input): Promise<Output> 
 
 async function getResults(ctx: Context, electionId: string): Promise<Results> {
   const results = await altVote.getResults({
-    getBallotStream: () => getBallotStream(ctx, electionId),
+    getBallotStream: () =>
+      getBallotStream(ctx, electionId).pipe(
+        new Transform({
+          objectMode: true,
+          transform: (ballot, _, cb) => {
+            cb(null, ballot.candidateIds);
+          },
+        })
+      ),
   });
+
+  if (!results) {
+    return null;
+  }
 
   return {
     winner: results.winner,
