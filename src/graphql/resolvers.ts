@@ -59,6 +59,10 @@ export const resolvers: Resolvers<Context> = {
       });
       return { election };
     },
+    castBallot: async (_, args, ctx) => {
+      await electionService.castBallot(ctx, args.input);
+      return {};
+    },
   },
   Election: {
     createdBy: ({ createdBy }, _, ctx) => ctx.userDataLoader.load(createdBy),

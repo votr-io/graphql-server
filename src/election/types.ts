@@ -2,13 +2,6 @@ export interface Context {
   token?: string;
 }
 
-// export enum Status {
-//   SETUP = 'SETUP',
-//   OPEN = 'OPEN',
-//   TALLYING = 'TALLYING',
-//   CLOSED = 'CLOSED',
-// }
-
 type ElectionStatus = 'SETUP' | 'OPEN' | 'TALLYING' | 'CLOSED';
 
 export interface Election {
@@ -26,6 +19,12 @@ export interface Candidate {
   id: string;
   name: string;
   description: string;
+}
+
+export interface Ballot {
+  electionId: string;
+  dateCreated: Date;
+  candidateIds: string[];
 }
 
 export interface Results {

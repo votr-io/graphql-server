@@ -200,6 +200,19 @@ export type User = {
   elections: Array<Election>;
 };
 
+export type CastBallotMutationVariables = {
+  input: CastBallotInput;
+};
+
+
+export type CastBallotMutation = (
+  { __typename?: 'Mutation' }
+  & { castBallot: (
+    { __typename?: 'CastBallotOutput' }
+    & Pick<CastBallotOutput, '_'>
+  ) }
+);
+
 export type LoginMutationVariables = {
   email: Scalars['String'];
   password: Scalars['String'];
@@ -342,6 +355,13 @@ export type SelfQuery = (
 );
 
 
+export const CastBallotDocument = gql`
+    mutation castBallot($input: CastBallotInput!) {
+  castBallot(input: $input) {
+    _
+  }
+}
+    `;
 export const LoginDocument = gql`
     mutation login($email: String!, $password: String!) {
   login(email: $email, password: $password) {
@@ -464,6 +484,9 @@ export type SdkFunctionWrapper = <T>(action: () => Promise<T>) => Promise<T>;
 const defaultWrapper: SdkFunctionWrapper = sdkFunction => sdkFunction();
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+    castBallot(variables: CastBallotMutationVariables): Promise<CastBallotMutation> {
+      return withWrapper(() => client.request<CastBallotMutation>(print(CastBallotDocument), variables));
+    },
     login(variables: LoginMutationVariables): Promise<LoginMutation> {
       return withWrapper(() => client.request<LoginMutation>(print(LoginDocument), variables));
     },

@@ -1,0 +1,5 @@
+mutation castBallot($input: CastBallotInput!) {
+  castBallot(input: $input) {
+    _
+  }
+}

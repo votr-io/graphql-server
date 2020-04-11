@@ -12,5 +12,5 @@ CREATE TABLE IF NOT EXISTS elections (
 CREATE TABLE IF NOT EXISTS ballots (
   election_id TEXT NOT NULL REFERENCES elections (id),
   date_created TIMESTAMP WITH TIME ZONE DEFAULT (now() at time zone 'utc'),
-  votes JSON NOT NULL
+  candidate_ids JSON NOT NULL
 );
