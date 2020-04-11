@@ -74,6 +74,11 @@ export enum ElectionStatus {
   Closed = 'CLOSED'
 }
 
+export type LoginInput = {
+  email: Scalars['String'];
+  password: Scalars['String'];
+};
+
 export type LoginOutput = {
    __typename?: 'LoginOutput';
   user: User;
@@ -92,8 +97,7 @@ export type Mutation = {
 
 
 export type MutationLoginArgs = {
-  email: Scalars['String'];
-  password: Scalars['String'];
+  input: LoginInput;
 };
 
 
@@ -285,6 +289,7 @@ export type ResolversTypes = {
   CandidateVotes: ResolverTypeWrapper<CandidateVotes>,
   Int: ResolverTypeWrapper<Scalars['Int']>,
   Mutation: ResolverTypeWrapper<{}>,
+  LoginInput: LoginInput,
   LoginOutput: ResolverTypeWrapper<Omit<LoginOutput, 'user'> & { user: ResolversTypes['User'] }>,
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>,
   UpsertUserInput: UpsertUserInput,
@@ -314,6 +319,7 @@ export type ResolversParentTypes = {
   CandidateVotes: CandidateVotes,
   Int: Scalars['Int'],
   Mutation: {},
+  LoginInput: LoginInput,
   LoginOutput: Omit<LoginOutput, 'user'> & { user: ResolversParentTypes['User'] },
   Boolean: Scalars['Boolean'],
   UpsertUserInput: UpsertUserInput,
@@ -364,7 +370,7 @@ export type LoginOutputResolvers<ContextType = any, ParentType extends Resolvers
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  login?: Resolver<ResolversTypes['LoginOutput'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'email' | 'password'>>,
+  login?: Resolver<ResolversTypes['LoginOutput'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'input'>>,
   logout?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>,
   upsertUser?: Resolver<ResolversTypes['UpsertUserOutput'], ParentType, ContextType, RequireFields<MutationUpsertUserArgs, 'input'>>,
   upsertElection?: Resolver<ResolversTypes['UpsertElectionOutput'], ParentType, ContextType, RequireFields<MutationUpsertElectionArgs, 'input'>>,

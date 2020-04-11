@@ -9,7 +9,7 @@ type Query {
 type Mutation {
   ## user stuff
   #login will set cookie with this users auth info
-  login(email: String!, password: String!): LoginOutput!
+  login(input: LoginInput!): LoginOutput!
   #logout just clears cookies
   logout: Boolean
   #upsertUser will set cookie with this users auth info
@@ -25,7 +25,10 @@ type Mutation {
 }
 
 ##users
-
+input LoginInput {
+  email: String!
+  password: String!
+}
 type LoginOutput {
   user: User!
 }

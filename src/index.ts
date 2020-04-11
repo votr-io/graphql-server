@@ -5,6 +5,7 @@ import { logger } from './logger';
 import { CONFIG } from './config';
 import { server } from './graphql';
 import { migrate } from './postgres';
+import { getBallotStream } from './election/store/getBallotStream';
 
 /**
  * This is the main entry point for our server.
@@ -30,6 +31,17 @@ import { migrate } from './postgres';
  * The only purpose of this is to that I can use "await" here for db migrations.
  * The day that top-level await is supported, this could go away.
  */
+
+// (async () => {
+//   console.log('starting scratch test...');
+
+//   const ballotStream = getBallotStream({}, 'aca864ae-6518-4426-bd17-1ef22f234ec7');
+//   ballotStream.on('data', (data) => {
+//     console.log({ data });
+//   });
+
+//   console.log('scratch test done.');
+// })();
 
 (async () => {
   logger.info('starting up!');

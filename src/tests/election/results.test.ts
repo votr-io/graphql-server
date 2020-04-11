@@ -17,7 +17,7 @@ describe('results', () => {
     expect(response.election.results).toBeNull();
   });
 
-  it('a closed election with cast ballots should have results', async () => {
+  it.skip('a closed election with cast ballots should have results', async () => {
     const { id, candidates } = await createStartedElection();
     const candidateIds = candidates.map(({ id }) => id);
 

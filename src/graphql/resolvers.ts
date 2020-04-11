@@ -26,7 +26,7 @@ export const resolvers: Resolvers<Context> = {
      * user
      */
     login: async (_, args, ctx) => {
-      const { user, token } = await userService.login(ctx, args);
+      const { user, token } = await userService.login(ctx, args.input);
       ctx.login(token);
       return { user };
     },

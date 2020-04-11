@@ -74,6 +74,11 @@ export enum ElectionStatus {
   Closed = 'CLOSED'
 }
 
+export type LoginInput = {
+  email: Scalars['String'];
+  password: Scalars['String'];
+};
+
 export type LoginOutput = {
    __typename?: 'LoginOutput';
   user: User;
@@ -92,8 +97,7 @@ export type Mutation = {
 
 
 export type MutationLoginArgs = {
-  email: Scalars['String'];
-  password: Scalars['String'];
+  input: LoginInput;
 };
 
 
@@ -214,8 +218,7 @@ export type CastBallotMutation = (
 );
 
 export type LoginMutationVariables = {
-  email: Scalars['String'];
-  password: Scalars['String'];
+  input: LoginInput;
 };
 
 
@@ -409,8 +412,8 @@ export const CastBallotDocument = gql`
 }
     `;
 export const LoginDocument = gql`
-    mutation login($email: String!, $password: String!) {
-  login(email: $email, password: $password) {
+    mutation login($input: LoginInput!) {
+  login(input: $input) {
     user {
       id
       email

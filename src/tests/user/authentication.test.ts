@@ -37,7 +37,7 @@ describe('authentication', () => {
     await sdk.logout();
 
     await expect(
-      sdk.login({ email, password: 'not the correct password' })
+      sdk.login({ input: { email, password: 'not the correct password' } })
     ).rejects.toThrow();
   });
 
@@ -56,7 +56,7 @@ describe('authentication', () => {
     expect(self).toBeNull();
 
     //ok, now with all that setup out of the way, lets try logging in
-    const loginResponse = await sdk.login({ email, password });
+    const loginResponse = await sdk.login({ input: { email, password } });
     const user = loginResponse.login.user;
     expect(user).not.toBeNull();
     expect(user.id).toEqual(id);

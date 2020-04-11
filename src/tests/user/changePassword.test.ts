@@ -40,7 +40,7 @@ describe('change password', () => {
     await sdk.logout();
 
     //login to prove that our first password is working
-    await sdk.login({ email, password: firstPassword });
+    await sdk.login({ input: { email, password: firstPassword } });
     //change the password
     await sdk.upsertUser({
       input: {
@@ -51,10 +51,12 @@ describe('change password', () => {
     await sdk.logout();
 
     //try to login with the first password (should fail)
-    await expect(sdk.login({ email, password: firstPassword })).rejects.toThrow();
+    await expect(
+      sdk.login({ input: { email, password: firstPassword } })
+    ).rejects.toThrow();
 
     //try to login with the first password (should work)
-    const loginResponse = await sdk.login({ email, password: secondPassword });
+    const loginResponse = await sdk.login({ input: { email, password: secondPassword } });
     expect(loginResponse.login.user.id).toEqual(id);
   });
 });
