@@ -248,6 +248,29 @@ export type StartElectionMutation = (
   ) }
 );
 
+export type StopElectionMutationVariables = {
+  input: StopElectionInput;
+};
+
+
+export type StopElectionMutation = (
+  { __typename?: 'Mutation' }
+  & { stopElection: (
+    { __typename?: 'StopElectionOutput' }
+    & { election: (
+      { __typename?: 'Election' }
+      & Pick<Election, 'id' | 'name' | 'description' | 'status'>
+      & { createdBy: (
+        { __typename?: 'User' }
+        & Pick<User, 'id' | 'email'>
+      ), candidates: Array<(
+        { __typename?: 'Candidate' }
+        & Pick<Candidate, 'id' | 'name' | 'description'>
+      )> }
+    ) }
+  ) }
+);
+
 export type UpsertElectionMutationVariables = {
   input: UpsertElectionInput;
 };
@@ -355,6 +378,27 @@ export const StartElectionDocument = gql`
   }
 }
     `;
+export const StopElectionDocument = gql`
+    mutation stopElection($input: StopElectionInput!) {
+  stopElection(input: $input) {
+    election {
+      id
+      name
+      description
+      createdBy {
+        id
+        email
+      }
+      candidates {
+        id
+        name
+        description
+      }
+      status
+    }
+  }
+}
+    `;
 export const UpsertElectionDocument = gql`
     mutation upsertElection($input: UpsertElectionInput!) {
   upsertElection(input: $input) {
@@ -428,6 +472,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     startElection(variables: StartElectionMutationVariables): Promise<StartElectionMutation> {
       return withWrapper(() => client.request<StartElectionMutation>(print(StartElectionDocument), variables));
+    },
+    stopElection(variables: StopElectionMutationVariables): Promise<StopElectionMutation> {
+      return withWrapper(() => client.request<StopElectionMutation>(print(StopElectionDocument), variables));
     },
     upsertElection(variables: UpsertElectionMutationVariables): Promise<UpsertElectionMutation> {
       return withWrapper(() => client.request<UpsertElectionMutation>(print(UpsertElectionDocument), variables));
