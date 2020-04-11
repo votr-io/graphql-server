@@ -1,6 +1,6 @@
 import { sdk } from '../graphql/sdk';
 import { createUserAndLogin } from '../user/util';
-import { newElectionInput } from './util';
+import { newElectionInput, createElection, createStartedElection } from './util';
 
 describe('updating an election', () => {
   it('should throw an error if trying to update an election that was created by another user', async () => {
@@ -86,5 +86,20 @@ describe('updating an election', () => {
     expect(updatedElection.name).toEqual(input.name);
     expect(updatedElection.description).toEqual(input.description);
     expect(updatedElection.candidates).toEqual(newCandidates);
+  });
+
+  it('should error if the user tries to update the election after it has started', async () => {
+    const { id } = await createStartedElection();
+
+    await expect(
+      sdk.upsertElection({
+        input: {
+          id,
+          name: 'asdf',
+          description: 'asdf',
+          candidates: [],
+        },
+      })
+    ).rejects.toThrow();
   });
 });

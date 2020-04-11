@@ -69,6 +69,10 @@ async function updateElection(
     throw new Error('not authorized');
   }
 
+  if (existingElection.status !== 'SETUP') {
+    throw new Error('election cannot be modified once it has started');
+  }
+
   const election: Election = {
     ...existingElection,
     dateUpdated: new Date(),

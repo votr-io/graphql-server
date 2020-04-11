@@ -1,5 +1,6 @@
 import * as uuid from 'uuid';
 import { sdk } from '../graphql/sdk';
+import { createUserAndLogin } from '../user/util';
 
 export function newElectionInput() {
   const id = uuid.v4();
@@ -62,4 +63,15 @@ export async function createElection({
   });
 
   return response.upsertElection.election;
+}
+
+export async function createStartedElection() {
+  await createUserAndLogin();
+  const { id: electionId } = await createElection();
+  const response = await sdk.startElection({
+    input: {
+      electionId,
+    },
+  });
+  return response.startElection.election;
 }
