@@ -13,5 +13,30 @@ query getElection($id: ID!) {
       description
     }
     status
+    results {
+      winner {
+        id
+        name
+        description
+      }
+      replay {
+        candidateTotals {
+          candidate {
+            id
+            name
+            description
+          }
+          votes
+        }
+        redistribution {
+          candidate {
+            id
+            name
+            description
+          }
+          votes
+        }
+      }
+    }
   }
 }

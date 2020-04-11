@@ -302,6 +302,29 @@ export type UpsertElectionMutation = (
       ), candidates: Array<(
         { __typename?: 'Candidate' }
         & Pick<Candidate, 'id' | 'name' | 'description'>
+      )>, results?: Maybe<(
+        { __typename?: 'Results' }
+        & { winner: (
+          { __typename?: 'Candidate' }
+          & Pick<Candidate, 'id' | 'name' | 'description'>
+        ), replay: Array<(
+          { __typename?: 'Round' }
+          & { candidateTotals: Array<(
+            { __typename?: 'CandidateVotes' }
+            & Pick<CandidateVotes, 'votes'>
+            & { candidate?: Maybe<(
+              { __typename?: 'Candidate' }
+              & Pick<Candidate, 'id' | 'name' | 'description'>
+            )> }
+          )>, redistribution?: Maybe<Array<Maybe<(
+            { __typename?: 'CandidateVotes' }
+            & Pick<CandidateVotes, 'votes'>
+            & { candidate?: Maybe<(
+              { __typename?: 'Candidate' }
+              & Pick<Candidate, 'id' | 'name' | 'description'>
+            )> }
+          )>>> }
+        )> }
       )> }
     ) }
   ) }
@@ -339,6 +362,29 @@ export type GetElectionQuery = (
     ), candidates: Array<(
       { __typename?: 'Candidate' }
       & Pick<Candidate, 'id' | 'name' | 'description'>
+    )>, results?: Maybe<(
+      { __typename?: 'Results' }
+      & { winner: (
+        { __typename?: 'Candidate' }
+        & Pick<Candidate, 'id' | 'name' | 'description'>
+      ), replay: Array<(
+        { __typename?: 'Round' }
+        & { candidateTotals: Array<(
+          { __typename?: 'CandidateVotes' }
+          & Pick<CandidateVotes, 'votes'>
+          & { candidate?: Maybe<(
+            { __typename?: 'Candidate' }
+            & Pick<Candidate, 'id' | 'name' | 'description'>
+          )> }
+        )>, redistribution?: Maybe<Array<Maybe<(
+          { __typename?: 'CandidateVotes' }
+          & Pick<CandidateVotes, 'votes'>
+          & { candidate?: Maybe<(
+            { __typename?: 'Candidate' }
+            & Pick<Candidate, 'id' | 'name' | 'description'>
+          )> }
+        )>>> }
+      )> }
     )> }
   )> }
 );
@@ -436,6 +482,31 @@ export const UpsertElectionDocument = gql`
         description
       }
       status
+      results {
+        winner {
+          id
+          name
+          description
+        }
+        replay {
+          candidateTotals {
+            candidate {
+              id
+              name
+              description
+            }
+            votes
+          }
+          redistribution {
+            candidate {
+              id
+              name
+              description
+            }
+            votes
+          }
+        }
+      }
     }
   }
 }
@@ -466,6 +537,31 @@ export const GetElectionDocument = gql`
       description
     }
     status
+    results {
+      winner {
+        id
+        name
+        description
+      }
+      replay {
+        candidateTotals {
+          candidate {
+            id
+            name
+            description
+          }
+          votes
+        }
+        redistribution {
+          candidate {
+            id
+            name
+            description
+          }
+          votes
+        }
+      }
+    }
   }
 }
     `;
