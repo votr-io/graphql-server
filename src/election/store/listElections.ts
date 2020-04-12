@@ -48,6 +48,7 @@ interface Row {
   name: string;
   description: string;
   status: string;
+  vote_count: number;
   candidates: any;
   results?: any;
 }
@@ -61,6 +62,7 @@ function parseRow(row: Row): Election {
     name: row.name,
     description: row.description,
     status: row.status as Election['status'],
+    voteCount: row.vote_count,
     candidates: row.candidates,
     results: row.results,
   };

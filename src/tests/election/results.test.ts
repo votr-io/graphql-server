@@ -32,7 +32,7 @@ describe('results', () => {
     expect(response.election.results).not.toBeNull();
   });
 
-  it.only('multiple rounds', async () => {
+  it('multiple rounds', async () => {
     const { id, candidates } = await createStartedElection();
     const candidateIds = candidates.map(({ id }) => id);
     const A = candidateIds[0];

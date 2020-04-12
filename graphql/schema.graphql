@@ -112,6 +112,7 @@ type Election {
   description: String!
   candidates: [Candidate!]!
   status: ElectionStatus!
+  voteCount: Int!
   results: Results
 }
 

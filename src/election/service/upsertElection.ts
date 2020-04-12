@@ -51,6 +51,7 @@ async function createElection(ctx: Context, input: ValidatedInput) {
     description,
     candidates,
     status: 'SETUP',
+    voteCount: 0,
     results: null,
   };
 

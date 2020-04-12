@@ -23,6 +23,7 @@ describe('creating an election', () => {
     expect(response.upsertElection.election.name).toEqual(input.name);
     expect(response.upsertElection.election.description).toEqual(input.description);
     expect(response.upsertElection.election.candidates).toEqual(input.candidates);
+    expect(response.upsertElection.election.voteCount).toEqual(0);
   });
 
   it('generates an id if one is not provided', async () => {

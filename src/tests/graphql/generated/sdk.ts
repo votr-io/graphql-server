@@ -60,6 +60,7 @@ export type Election = {
   description: Scalars['String'];
   candidates: Array<Candidate>;
   status: ElectionStatus;
+  voteCount: Scalars['Int'];
   results?: Maybe<Results>;
 };
 
@@ -298,7 +299,7 @@ export type UpsertElectionMutation = (
     { __typename?: 'UpsertElectionOutput' }
     & { election: (
       { __typename?: 'Election' }
-      & Pick<Election, 'id' | 'name' | 'description' | 'status'>
+      & Pick<Election, 'id' | 'name' | 'description' | 'status' | 'voteCount'>
       & { createdBy: (
         { __typename?: 'User' }
         & Pick<User, 'id' | 'email'>
@@ -358,7 +359,7 @@ export type GetElectionQuery = (
   { __typename?: 'Query' }
   & { election?: Maybe<(
     { __typename?: 'Election' }
-    & Pick<Election, 'id' | 'name' | 'description' | 'status'>
+    & Pick<Election, 'id' | 'name' | 'description' | 'status' | 'voteCount'>
     & { createdBy: (
       { __typename?: 'User' }
       & Pick<User, 'id' | 'email'>
@@ -485,6 +486,7 @@ export const UpsertElectionDocument = gql`
         description
       }
       status
+      voteCount
       results {
         winner {
           id
@@ -540,6 +542,7 @@ export const GetElectionDocument = gql`
       description
     }
     status
+    voteCount
     results {
       winner {
         id

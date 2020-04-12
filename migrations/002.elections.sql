@@ -5,8 +5,9 @@ CREATE TABLE IF NOT EXISTS elections (
   created_by TEXT NOT NULL REFERENCES users(id),
   name TEXT NOT NULL,
   description TEXT NOT NULL,
-  status TEXT NOT NULL,
   candidates JSON NOT NULL,
+  status TEXT NOT NULL,
+  vote_count INT NOT NULL,
   results JSON
 );
 CREATE TABLE IF NOT EXISTS ballots (

@@ -13,6 +13,7 @@ export interface Election {
   description: string;
   candidates: Candidate[];
   status: ElectionStatus;
+  voteCount: number;
   results?: Results;
 }
 export interface Candidate {
