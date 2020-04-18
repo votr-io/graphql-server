@@ -1,8 +1,8 @@
 import * as bcrypt from 'bcrypt';
-import { User as StoreUser } from '../store/types';
 import { Context, User } from './types';
 import * as store from '../store';
 import * as tokens from '../../tokens';
+import { upsertUser } from './upsertUser';
 
 interface Input {
   email: string;
@@ -20,7 +20,8 @@ export async function login(ctx: Context, input: Input): Promise<Output> {
   const user = await store.getUserByEmail(ctx, email);
 
   if (!user) {
-    throw new Error('cound not find user: incorrect email or password');
+    //This is maybe weird - if the user does not exist, go ahead and create them
+    return await upsertUser(ctx, input);
   }
 
   const passwordIsCorrect = await isMatch(password, user.encryptedPassword);

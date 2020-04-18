@@ -28,6 +28,17 @@ describe('authentication', () => {
     expect(selfAfterLogout).toBeNull();
   });
 
+  it('logging in creates a user if that email is not taken', async () => {
+    const email = `${uuid.v4()}@test.com`;
+    const password = 'boggle';
+
+    const response = await sdk.login({
+      input: { email, password },
+    });
+
+    expect(response.login.user.email).toEqual(email);
+  });
+
   it('fails if you try to login with a bad password', async () => {
     const id = uuid.v4();
     const email = `${uuid.v4()}@test.com`;
